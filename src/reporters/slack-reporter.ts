@@ -11,7 +11,8 @@ export class SlackReporter extends Reporter {
   private messageTsPromise: Promise<string>;
   private attachments: string[];
   private logs: string[];
-  private status: "success" | "failure";
+  private title: string;
+  private status: "pending" | "success" | "failure" | "progress";
 
   private messageText: string;
   private messageBlocks: {
@@ -21,48 +22,66 @@ export class SlackReporter extends Reporter {
 
   constructor(client: WebClient, channelId: string) {
     super();
+    this.title = "";
     this.client = client;
     this.channelId = channelId;
     this.attachments = [];
     this.logs = [];
     this.messageBlocks = {};
-    this.status = "failure";
+    this.status = "pending";
+  }
+  
+
+  private async postMessage() {
+    this.messageTsPromise = this.client.chat
+      .postMessage({ ...this.buildMessageContent(), channel: this.channelId })
+      .then((result) => result.message.ts);
+  }
+
+  private async updateMessage() {
+    await this.client.chat.update({
+      ...this.buildMessageContent(),
+      channel: this.channelId,
+      ts: await this.messageTsPromise,
+    });
   }
 
   public async reportInvalidTask(message?: string) {
+    this.status = "failure";
+    this.title = message || `Invalid task`;
     this.messageText = message || `Invalid task`;
-    this.postMessage();
+    this.client.chat
+      .postMessage({ text: this.messageText, channel: this.channelId })
+      .then((result) => result.message.ts);
   }
 
   protected async onCreate(title: string, cmdLine: string) {
     this.messageText = `${title}\n${cmdLine}`;
+    this.title = title;
+    this.status = "progress";
+    await this.postMessage();
+  }
+
+  private buildMessageContent() {
     const emoji =
       this.status == "success"
         ? ":white_check_mark:"
         : this.status == "failure"
         ? ":x:"
+        : this.status == "pending"
+        ? ":stopwatch:"
         : ":gear:";
-    this.messageBlocks.header = {
-      type: "header",
-      text: {
-        type: "plain_text",
-        text: `${emoji} #${this.task.id} - ${title}`,
+
+    const blocks: KnownBlock[] = [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: `${emoji} #${this.task.id} - ${this.title}`,
+        },
       },
-    };
-    this.postMessage();
-  }
+    ];
 
-  private async postMessage() {
-    this.messageTsPromise = this.client.chat
-      .postMessage({ channel: this.channelId, text: this.messageText })
-      .then((result) => result.message.ts);
-  }
-
-  private async updateMessage() {
-    const blocks = [];
-    if (this.messageBlocks.header) {
-      blocks.push(this.messageBlocks.header);
-    }
     if (this.messageBlocks.progress) {
       blocks.push(this.messageBlocks.progress);
     }
@@ -93,12 +112,8 @@ export class SlackReporter extends Reporter {
         text: { type: "mrkdwn", text: `${this.attachments.join("  \n")}` },
       });
     }
-    await this.client.chat.update({
-      channel: this.channelId,
-      ts: await this.messageTsPromise,
-      text: this.messageText,
-      blocks,
-    });
+
+    return { text: this.messageText, blocks };
   }
 
   protected async onStart() {}
