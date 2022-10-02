@@ -1,0 +1,48 @@
+{
+  "name": "moon-command-bot",
+  "version": "0.0.1",
+  "description": "Bot to handle command for Moonbeam",
+  "author": "Crystalin <alan@purestake.com>",
+  "license": "ISC",
+  "repository": "https://github.com/PureStake/moon-command-bot",
+  "homepage": "https://github.com/PureStake/moon-command-bot",
+  "bugs": "https://github.com/PureStake/moon-command-bot/issues",
+  "scripts": {
+    "dev": "nodemon --exec \"npm start\"",
+    "build": "tsc",
+    "start": "ts-node src/server.ts",
+    "prettier": "prettier '{*,**/*}.{ts,js,json,yaml,html}'",
+    "format": "npx run prettier --write",
+    "lint": "npx run prettier --check"
+  },
+  "dependencies": {
+    "@octokit/auth-app": "^3.5.3",
+    "@octokit/webhooks": "^9.17.0",
+    "@slack/bolt": "^3.12.1",
+    "@twilio/replay-event-emitter": "^0.3.1",
+    "debug": "^4.3.4",
+    "express": "^4.18.1",
+    "moment": "^2.29.4",
+    "octokit": "^2.0.7",
+    "p-queue": "^6.6.2",
+    "rereadable-stream": "^1.4.14",
+    "typed-emitter": "^2.1.0",
+    "typescript": "^4.7.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.9",
+    "prettier": "^2.4.0",
+    "prettier-plugin-compactify": "^0.1.4",
+    "ts-node": "^10.9.1"
+  },
+  "nodemonConfig": {
+    "exec": "npm start",
+    "watch": [
+      ".env",
+      "."
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}
