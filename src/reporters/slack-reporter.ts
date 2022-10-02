@@ -125,9 +125,10 @@ export class SlackReporter extends Reporter {
       type: "context",
       elements: [
         {
-          text: `*${new Date().toISOString()}*  |  [${
-            ("".padStart(percent / 5), "#")
-          }${("".padStart(20 - percent / 5), "#")}] ${percent
+          text: `*${new Date().toISOString()}*  |  [${"".padStart(
+            percent / 5,
+            "#"
+          )}${"".padStart(20 - percent / 5, "#")}] ${percent
             .toString()
             .padStart(3, " ")}%${message ? ` -  ${message}` : ""}`,
           type: "mrkdwn",
@@ -138,7 +139,7 @@ export class SlackReporter extends Reporter {
   }
 
   protected async onLog(level: TaskLogLevel, message: string) {
-    this.logs.push(`${level}: ${message}`);
+    this.logs.push(`${level.toUpperCase()}: ${message}`);
   }
 
   protected async onAttachment(filePath: string) {
