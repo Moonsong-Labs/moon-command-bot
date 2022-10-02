@@ -1,5 +1,6 @@
 import { Reporter } from "./reporter";
 import Debug from "debug";
+import PQueue from "p-queue";
 import { TaskLogLevel } from "../commands/task";
 import { OctokitService } from "../utils/github";
 const debug = Debug("reporters:github");
@@ -14,8 +15,12 @@ export class GithubReporter extends Reporter {
   private message: string;
   private logs: string[];
 
+  // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
+  private pQueue: PQueue;
+
   constructor(octokit: OctokitService, issueNumber: number) {
     super();
+    this.pQueue = new PQueue({ concurrency: 1 });
     this.octoRepo = octokit;
     this.issueNumber = issueNumber;
     this.attachments = [];
@@ -31,24 +36,28 @@ export class GithubReporter extends Reporter {
 
   private async reply() {
     const octoRest = (await this.octoRepo.getOctokit()).rest;
-    this.commentIdPromise = octoRest.issues
-      .createComment(
-        this.octoRepo.extendRepoOwner({
-          body: this.message,
-          issue_number: this.issueNumber,
-        })
-      )
-      .then((issueComment) => issueComment.data.id);
+    this.commentIdPromise = this.pQueue.add(() =>
+      octoRest.issues
+        .createComment(
+          this.octoRepo.extendRepoOwner({
+            body: this.message,
+            issue_number: this.issueNumber,
+          })
+        )
+        .then((issueComment) => issueComment.data.id)
+    );
   }
 
   private async updateReply() {
     const octoRest = (await this.octoRepo.getOctokit()).rest;
-    await octoRest.issues.updateComment(
-      this.octoRepo.extendRepoOwner({
-        body: this.message,
-        comment_id: await this.commentIdPromise,
-        issue_number: this.issueNumber,
-      })
+    await this.pQueue.add(async () =>
+      octoRest.issues.updateComment(
+        this.octoRepo.extendRepoOwner({
+          body: this.message,
+          comment_id: await this.commentIdPromise,
+          issue_number: this.issueNumber,
+        })
+      )
     );
   }
 
