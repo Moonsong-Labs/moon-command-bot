@@ -2,6 +2,7 @@ import { Reporter } from "./reporter";
 import { Writable } from "node:stream";
 import { WebClient, KnownBlock } from "@slack/web-api";
 import Debug from "debug";
+import PQueue from "p-queue";
 import { TaskLogLevel } from "../commands/task";
 const debug = Debug("reporters:slack");
 
@@ -12,6 +13,10 @@ export class SlackReporter extends Reporter {
   private attachments: string[];
   private logs: string[];
   private title: string;
+
+  // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
+  private pQueue: PQueue;
+
   private status: "pending" | "success" | "failure" | "progress";
 
   private messageText: string;
@@ -23,6 +28,7 @@ export class SlackReporter extends Reporter {
   constructor(client: WebClient, channelId: string) {
     super();
     this.title = "";
+    this.pQueue = new PQueue({ concurrency: 1 });
     this.client = client;
     this.channelId = channelId;
     this.attachments = [];
@@ -32,26 +38,32 @@ export class SlackReporter extends Reporter {
   }
 
   private async postMessage() {
-    this.messageTsPromise = this.client.chat
-      .postMessage({ ...this.buildMessageContent(), channel: this.channelId })
-      .then((result) => result.message.ts);
+    this.messageTsPromise = this.pQueue.add(() =>
+      this.client.chat
+        .postMessage({ ...this.buildMessageContent(), channel: this.channelId })
+        .then((result) => result.message.ts)
+    );
   }
 
   private async updateMessage() {
-    await this.client.chat.update({
-      ...this.buildMessageContent(),
-      channel: this.channelId,
-      ts: await this.messageTsPromise,
-    });
+    await this.pQueue.add(async () =>
+      this.client.chat.update({
+        ...this.buildMessageContent(),
+        channel: this.channelId,
+        ts: await this.messageTsPromise,
+      })
+    );
   }
 
   public async reportInvalidTask(message?: string) {
     this.status = "failure";
     this.title = message || `Invalid task`;
     this.messageText = message || `Invalid task`;
-    this.client.chat
-      .postMessage({ text: this.messageText, channel: this.channelId })
-      .then((result) => result.message.ts);
+    this.pQueue.add(() =>
+      this.client.chat
+        .postMessage({ text: this.messageText, channel: this.channelId })
+        .then((result) => result.message.ts)
+    );
   }
 
   protected async onCreate(title: string, cmdLine: string) {
