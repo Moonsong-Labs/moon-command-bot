@@ -1,6 +1,6 @@
 import { Reporter } from "./reporter";
 import { Writable } from "node:stream";
-import { WebClient } from "@slack/web-api";
+import { WebClient, KnownBlock } from "@slack/web-api";
 import Debug from "debug";
 import { TaskLogLevel } from "../commands/task";
 const debug = Debug("reporters:slack");
@@ -11,81 +11,141 @@ export class SlackReporter extends Reporter {
   private messageTsPromise: Promise<string>;
   private attachments: string[];
   private status: "success" | "failure";
-  private finalMessage: string;
-  private logs: string[];
+
+  private messageText: string;
+  private messageBlocks: {
+    header?: KnownBlock;
+    progress?: KnownBlock;
+    logs?: KnownBlock[];
+    attachments?: KnownBlock[];
+  };
 
   constructor(client: WebClient, channelId: string) {
     super();
     this.client = client;
     this.channelId = channelId;
     this.attachments = [];
-    this.logs = [];
+    this.messageBlocks = {};
     this.status = "failure";
-    this.finalMessage = "Done";
   }
 
   public async reportInvalidTask(message?: string) {
-    await this.client.chat.postMessage({
-      channel: this.channelId,
-      text: message || `Invalid task`,
-    });
-  }
-
-  protected async onEnd() {
-    await this.client.chat.update({
-      channel: this.channelId,
-      ts: await this.messageTsPromise,
-      text: `Finished #${this.task.id}: ${this.status}`,
-      blocks: [
-        {
-          type: "header",
-          text: { type: "mrkdwn", text: `#${this.task.id}  \n${this.status}` },
-        },
-        ...this.logs.map((log) => {
-          return { type: "section", text: { type: "mrkdwn", text: `${log}` } };
-        }),
-        ...this.attachments.map((attachment) => {
-          return {
-            type: "section",
-            text: { type: "mrkdwn", text: `(soon embedded): ${attachment}` },
-          };
-        }),
-      ],
-    });
+    this.messageText = message || `Invalid task`;
+    this.postMessage();
   }
 
   protected async onCreate(title: string, cmdLine: string) {
+    this.messageText = `${title}\n${cmdLine}`;
+    this.messageBlocks.header = {
+      type: "header",
+      text: { type: "plain_text", text: `#${this.task.id} - ${title}` },
+    };
+    this.postMessage();
+  }
+
+  private async postMessage() {
     this.messageTsPromise = this.client.chat
-      .postMessage({ channel: this.channelId, text: title })
+      .postMessage({ channel: this.channelId, text: this.messageText })
       .then((result) => result.message.ts);
   }
-  protected async onStart() {
+
+  private async updateMessage() {
+    const blocks = [];
+    if (this.messageBlocks.header) {
+      blocks.push(this.messageBlocks.header);
+    }
+    if (this.messageBlocks.progress) {
+      blocks.push(this.messageBlocks.progress);
+    }
+
+    if (this.messageBlocks.logs) {
+      blocks.push({ type: "divider" });
+      blocks.push({
+        type: "section",
+        text: { type: "mrkdwn", text: " :newspaper: *Logs* :newspaper:" },
+      });
+      blocks.push(...this.messageBlocks.logs);
+    }
+    if (this.messageBlocks.attachments) {
+      blocks.push({ type: "divider" });
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: " :file_folder: *Attachments* :file_folder:",
+        },
+      });
+      blocks.push(...this.messageBlocks.attachments);
+    }
     await this.client.chat.update({
       channel: this.channelId,
       ts: await this.messageTsPromise,
-      text: `Started #${this.task.id}`,
+      text: this.messageText,
+      blocks,
     });
   }
-  protected async onSuccess(message?: string) {
-    this.status = "success";
-    this.finalMessage = `Success${message ? ` - ${message}` : ""}`;
-  }
-  protected async onFailure(message?: string) {
-    this.status = "failure";
-    this.finalMessage = `Failure${message ? ` - ${message}` : ""}`;
-  }
+
+  protected async onStart() {}
   protected async onProgress(percent: number, message?: string) {
-    await this.client.chat.update({
-      channel: this.channelId,
-      ts: await this.messageTsPromise,
-      text: `Process (${percent}%)${message ? ` - ${message}` : ""}`,
-    });
+    this.messageBlocks.progress = {
+      type: "context",
+      elements: [
+        {
+          text: `*${new Date().toISOString()}*  |  [${
+            ("".padStart(percent / 20), "#")
+          }${("".padStart(20 - percent / 20), "#")}] ${percent
+            .toString()
+            .padStart(3, " ")}%${message ? ` -  ${message}` : ""}`,
+          type: "mrkdwn",
+        },
+      ],
+    };
+    this.updateMessage();
   }
+
   protected async onLog(level: TaskLogLevel, message: string) {
-    this.logs.push(`${level}: ${message}`);
+    this.messageBlocks.logs.push({
+      type: "section",
+      text: { type: "mrkdwn", text: `${level}: ${message}` },
+    });
   }
 
   protected async onAttachment(filePath: string) {
+    this.messageBlocks.logs.push({
+      type: "section",
+      text: { type: "mrkdwn", text: `${filePath}` },
+    });
     this.attachments.push(filePath);
+  }
+
+  protected async onSuccess(message?: string) {
+    this.messageBlocks.progress = {
+      type: "context",
+      elements: [
+        {
+          text: `*${new Date().toISOString()}*  | Success${
+            message ? `: ${message}` : ""
+          }`,
+          type: "mrkdwn",
+        },
+      ],
+    };
+  }
+  protected async onFailure(message?: string) {
+    this.messageBlocks.progress = {
+      type: "context",
+      elements: [
+        {
+          text: `*${new Date().toISOString()}*  | Failure${
+            message ? `: ${message}` : ""
+          }`,
+          type: "mrkdwn",
+        },
+      ],
+    };
+  }
+
+  protected async onEnd() {
+    this.updateMessage();
   }
 }
