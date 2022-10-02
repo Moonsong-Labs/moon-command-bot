@@ -128,7 +128,7 @@ export class SlackReporter extends Reporter {
           text: `*${new Date().toISOString()}*  |  [${"".padStart(
             percent / 5,
             "#"
-          )}${"".padStart(20 - percent / 5, "#")}] ${percent
+          )}${"".padStart(20 - percent / 5, " ")}] ${percent
             .toString()
             .padStart(3, " ")}%${message ? ` -  ${message}` : ""}`,
           type: "mrkdwn",
