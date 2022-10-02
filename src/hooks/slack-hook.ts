@@ -1,5 +1,12 @@
-import { App, SlashCommand, AckFn } from "@slack/bolt";
+import {
+  App,
+  SlashCommand,
+  AckFn,
+  ExpressReceiver,
+  Receiver,
+} from "@slack/bolt";
 import { WebClient } from "@slack/web-api";
+import { Express } from "express";
 import { Hook } from "./hook";
 import Debug from "debug";
 import { SlackReporter } from "../reporters/slack-reporter";
@@ -9,17 +16,27 @@ interface SlackHookOptions {
   appToken: string;
   token: string;
   signingSecret: string;
+  express: Express;
 }
 
 export class SlackHook extends Hook {
   private app: App;
+  private receiver: Receiver;
 
-  constructor({ appToken, token, signingSecret }: SlackHookOptions) {
+  constructor({ appToken, token, signingSecret, express }: SlackHookOptions) {
     super();
-    this.app = new App({ appToken, token, signingSecret, socketMode: true });
-    this.app.command(/.*/, ({ client, body, ack }) =>
-      this.handleCommand(body, client, ack)
-    );
+    this.receiver = new ExpressReceiver({ signingSecret, app: express, endpoints: '/' });
+    this.app = new App({
+      receiver: this.receiver,
+      appToken,
+      token,
+      signingSecret,
+    });
+    this.app.command("/moonbot", ({ client, body, ack }) => {
+      debug(`Received command moonbot`);
+      return this.handleCommand(body, client, ack);
+    });
+    this.isReady = this.app.start().then(() => this);
   }
 
   private async handleCommand(

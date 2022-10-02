@@ -19,7 +19,7 @@ let isTerminating = false;
 let commander: Commander;
 let hooks: Hook[];
 let factories: TaskFactory[];
-let octoServices: { moonbeamRepo: OctokitService, forkRepo: OctokitService };
+let octoServices: { moonbeamRepo: OctokitService; forkRepo: OctokitService };
 let server: http.Server;
 
 export async function destroy() {
@@ -98,7 +98,7 @@ export async function main() {
 
   const app = express();
   server = new http.Server(app);
-  
+
   const sampleFactory = new SampleFactory("sample");
   const benchmarkFactory = new BenchmarkFactory("benchmark", octoServices);
 
@@ -113,6 +113,7 @@ export async function main() {
         appToken: process.env.SLACK_APP_TOKEN,
         token: process.env.SLACK_BOT_TOKEN,
         signingSecret: process.env.SLACK_SIGNING_SECRET,
+        express: app,
       })
     );
   }
