@@ -19,6 +19,7 @@ export class GithubReporter extends Reporter {
     this.octoRepo = octokit;
     this.issueNumber = issueNumber;
     this.attachments = [];
+    this.logs = [];
     this.status = "failure";
     this.message = "Done";
   }

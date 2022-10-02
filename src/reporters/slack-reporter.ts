@@ -19,6 +19,7 @@ export class SlackReporter extends Reporter {
     this.client = client;
     this.channelId = channelId;
     this.attachments = [];
+    this.logs = [];
     this.status = "failure";
     this.finalMessage = "Done";
   }
