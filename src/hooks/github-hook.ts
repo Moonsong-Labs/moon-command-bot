@@ -32,15 +32,15 @@ export class GithubHook extends Hook {
     });
     const webhooks = new Webhooks({ secret: webhookSecret });
 
-    const middleware = createNodeMiddleware((app) => {}, {
-      probot,
-      webhooksPath: "/github",
-    });
+    const middleware = createNodeMiddleware(
+      (app) => {
+        app.on(`issue_comment`, async ({ payload }) => {
+          this.onWebhook(payload);
+        });
+      },
+      { probot, webhooksPath: "/github" }
+    );
     express.use(middleware);
-
-    probot.on(`issue_comment`, async ({ payload }) => {
-      this.onWebhook(payload);
-    });
   }
 
   async onWebhook(payload) {
