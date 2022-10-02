@@ -35,6 +35,7 @@ export class GithubReporter extends Reporter {
   }
 
   private async reply() {
+    debug(`Replying to issue ${this.issueNumber}`);
     const octoRest = (await this.octoRepo.getOctokit()).rest;
     this.commentIdPromise = this.pQueue.add(() =>
       octoRest.issues
@@ -44,7 +45,12 @@ export class GithubReporter extends Reporter {
             issue_number: this.issueNumber,
           })
         )
-        .then((issueComment) => issueComment.data.id)
+        .then((issueComment) => {
+          debug(
+            `Created issue ${this.issueNumber} comment ${issueComment.data.id}`
+          );
+          return issueComment.data.id;
+        })
     );
   }
 
