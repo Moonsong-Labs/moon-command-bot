@@ -55,7 +55,7 @@ export class GithubHook extends Hook {
       return;
     }
 
-    const parts = commentText.slice(1).split(" ");
+    const parts = commentText.slice(1).split("\n")[0].split(" ");
     if (parts.length < 2) {
       return;
     }
