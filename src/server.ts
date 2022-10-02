@@ -1,4 +1,7 @@
 import fs from "node:fs/promises";
+import { promisify } from "node:util";
+import http from "node:http";
+import express from "express";
 import { Commander } from "./commands/commander";
 import { Hook } from "./hooks/hook";
 import { HttpHook } from "./hooks/http-hook";
@@ -8,15 +11,22 @@ import { BenchmarkFactory } from "./commands/benchmark/factory";
 import { Reporter } from "./reporters/reporter";
 import { TaskHistory } from "./utils/task-history";
 import { SlackHook } from "./hooks/slack-hook";
+import { TaskFactory } from "./commands/factory";
+import { GithubHook } from "./hooks/github-hook";
 
 let isTerminating = false;
 
 let commander: Commander;
 let hooks: Hook[];
+let factories: TaskFactory[];
+let octoServices: { moonbeamRepo: OctokitService, forkRepo: OctokitService };
+let server: http.Server;
 
 export async function destroy() {
   console.log(`Destroying...`);
   try {
+    //
+
     await Promise.race([
       new Promise((resolve) => setTimeout(resolve, 5000)),
       async () => {
@@ -24,10 +34,13 @@ export async function destroy() {
           await commander.destroy();
         }
         await Promise.all(hooks.map((hook) => hook.destroy()));
+        await Promise.all(factories.map((factory) => factory.destroy()));
+        await Promise.all(Object.values(octoServices).map((o) => o.destroy()));
       },
     ]);
+    server.close();
   } catch (error) {
-    console.error({ level: "error", event, error, origin });
+    console.error(error);
   }
   console.log("Bye");
 }
@@ -58,7 +71,7 @@ export async function main() {
     await fs.readFile(process.env.FORK_PRIVATE_PEM)
   ).toString();
 
-  const octoServices = {
+  octoServices = {
     moonbeamRepo: new OctokitService(
       process.env.MOONBEAM_REPO_OWNER,
       process.env.MOONBEAM_REPO_NAME,
@@ -83,19 +96,34 @@ export async function main() {
     ),
   };
 
+  const app = express();
+  server = new http.Server(app);
+  
   const sampleFactory = new SampleFactory("sample");
   const benchmarkFactory = new BenchmarkFactory("benchmark", octoServices);
 
   const taskHistory = new TaskHistory(1000);
 
   const commander = new Commander([sampleFactory, benchmarkFactory]);
-  const hooks: Hook[] = [new HttpHook({ port: 8000 })];
+  const hooks: Hook[] = [new HttpHook({ express: app })];
   if (process.env.SLACK_APP_TOKEN) {
+    console.log(`- Enable Slack hook`);
     hooks.push(
       new SlackHook({
         appToken: process.env.SLACK_APP_TOKEN,
         token: process.env.SLACK_BOT_TOKEN,
         signingSecret: process.env.SLACK_SIGNING_SECRET,
+      })
+    );
+  }
+  if (process.env.GITHUB_WEBHOOK_SECRET) {
+    console.log(`- Enable Github hook`);
+    hooks.push(
+      new GithubHook({
+        webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
+        privateKey: moonbeamPrivateKey,
+        appId: process.env.MOONBEAM_APP_ID,
+        express: app,
       })
     );
   }
@@ -116,10 +144,13 @@ export async function main() {
     );
   }
 
+  const port = process.env.HTTP_PORT || 8000;
+  server = app.listen(port, () => {
+    console.log(`The HTTP application is listening on port ${port}!`);
+  });
+
   await Promise.all(hooks.map((hook) => hook.isReady));
-  await sampleFactory.destroy();
-  await benchmarkFactory.destroy();
-  await Promise.all(Object.values(octoServices).map((o) => o.destroy()));
+
   console.log(`Ready !!`);
 }
 

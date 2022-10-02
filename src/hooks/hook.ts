@@ -16,6 +16,7 @@ export abstract class Hook
 {
   constructor() {
     super();
+    this.isReady = Promise.resolve<Hook>(this);
   }
 
   // Promise to ensure when the service is ready

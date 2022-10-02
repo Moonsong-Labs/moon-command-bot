@@ -6,45 +6,37 @@ import { HTMLStreamer } from "../reporters/html-streamer";
 const debug = Debug("hooks:http");
 
 interface HttpHookOptions {
-  port: number;
+  express: Express;
 }
 
 export class HttpHook extends Hook {
-  private app: Express;
-  private server: Server;
-
-  constructor({ port }: HttpHookOptions) {
+  constructor({ express }: HttpHookOptions) {
     super();
-    this.isReady = new Promise((resolve) => {
-      this.app = express();
-      this.app.get("*", (req, res) => {
+    this.isReady = new Promise<HttpHook>((resolve) => {
+      express.get("/rest/*", (req, res) => {
         this._handleRequest(req, res);
       });
-
-      this.server = this.app.listen(port, () => {
-        console.log(`The HTTP application is listening on port ${port}!`);
-        resolve(this);
-      });
+      resolve(this);
     });
   }
 
   private _handleRequest = (req: Request, res: Response) => {
     try {
       const parameters = req.originalUrl.slice(1).split(/\//);
-      if (parameters.length < 1) {
+      if (parameters.length < 2) {
         res.end("Error: Missing keyword");
         return;
       }
-      const keyword = parameters[0].toLocaleLowerCase();
+      const keyword = parameters[1].toLocaleLowerCase();
       const cmdLine = parameters.join(" ");
       debug(`Received keyword: ${keyword}, cmdLine:${cmdLine}`);
 
       if (keyword == "tasks") {
-        if (parameters.length < 0) {
+        if (parameters.length < 3) {
           throw new Error("Not enough arguments");
         }
         // special case (TODO: Handle separately)
-        const taskId = parseInt(parameters[1]);
+        const taskId = parseInt(parameters[2]);
         res.setHeader("Content-Type", "text/html; charset=utf-8");
         res.setHeader("Transfer-Encoding", "chunked");
         this.emit("history", taskId, res);
@@ -66,9 +58,6 @@ export class HttpHook extends Hook {
   };
 
   override async destroy() {
-    await this.isReady.then(() => {
-      console.log(`Closing HTTP server!`);
-      this.server.close();
-    });
+    await this.isReady;
   }
 }
