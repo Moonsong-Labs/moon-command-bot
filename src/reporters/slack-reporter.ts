@@ -30,7 +30,6 @@ export class SlackReporter extends Reporter {
     this.messageBlocks = {};
     this.status = "pending";
   }
-  
 
   private async postMessage() {
     this.messageTsPromise = this.client.chat
@@ -94,7 +93,10 @@ export class SlackReporter extends Reporter {
       });
       blocks.push({
         type: "section",
-        text: { type: "mrkdwn", text: `${this.logs.join("  \n")}` },
+        text: {
+          type: "mrkdwn",
+          text: `\`\`\`\n${this.logs.join("  \n")}\n\`\`\``,
+        },
       });
     }
     if (this.attachments.length > 0) {
@@ -118,6 +120,7 @@ export class SlackReporter extends Reporter {
 
   protected async onStart() {}
   protected async onProgress(percent: number, message?: string) {
+    this.status = "progress";
     this.messageBlocks.progress = {
       type: "context",
       elements: [
@@ -143,6 +146,7 @@ export class SlackReporter extends Reporter {
   }
 
   protected async onSuccess(message?: string) {
+    this.status = "success";
     this.messageBlocks.progress = {
       type: "context",
       elements: [
@@ -156,6 +160,7 @@ export class SlackReporter extends Reporter {
     };
   }
   protected async onFailure(message?: string) {
+    this.status = "failure";
     this.messageBlocks.progress = {
       type: "context",
       elements: [
