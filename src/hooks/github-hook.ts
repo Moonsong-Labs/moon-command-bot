@@ -77,7 +77,7 @@ export class GithubHook extends Hook {
     this.emit(
       "command",
       { keyword: parts[0], parameters: { cmdLine } },
-      new GithubReporter(octoRepo, payload.issue.id)
+      new GithubReporter(octoRepo, payload.issue.number)
     );
   }
 
