@@ -42,10 +42,13 @@ export class SlackReporter extends Reporter {
           text: { type: "mrkdwn", text: `#${this.task.id}  \n${this.status}` },
         },
         ...this.logs.map((log) => {
-          return { type: "section", text: `${log}` };
+          return { type: "section", text: { type: "mrkdwn", text: `${log}` } };
         }),
         ...this.attachments.map((attachment) => {
-          return { type: "section", text: `(soon embedded): ${attachment}` };
+          return {
+            type: "section",
+            text: { type: "mrkdwn", text: `(soon embedded): ${attachment}` },
+          };
         }),
       ],
     });
