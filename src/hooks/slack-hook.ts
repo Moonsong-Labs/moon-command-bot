@@ -47,13 +47,12 @@ export class SlackHook extends Hook {
     client: WebClient,
     ack: AckFn<string>
   ) {
-    const keyword = body.command;
-
     const parts = body.text.split(" ");
     if (parts.length < 1) {
       await ack("Missing command");
       return;
     }
+    const keyword = parts[0];
     await ack();
     this.emit(
       "command",
