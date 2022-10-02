@@ -177,14 +177,12 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
-        {
-          text: `*${new Date().toISOString()}*  | Failure${
-            message ? `: ${message}` : ""
-          }`,
-          type: "mrkdwn",
-        },
+        { text: `*${new Date().toISOString()}*  | Failure`, type: "mrkdwn" },
       ],
     };
+    if (message) {
+      this.logs.push(`*Failure*: ${message}`);
+    }
   }
 
   protected async onEnd() {
