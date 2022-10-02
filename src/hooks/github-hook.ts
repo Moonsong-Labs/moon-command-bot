@@ -30,7 +30,6 @@ export class GithubHook extends Hook {
       privateKey: privateKey,
       secret: webhookSecret,
     });
-    const webhooks = new Webhooks({ secret: webhookSecret });
 
     const middleware = createNodeMiddleware(
       (app) => {
@@ -38,9 +37,9 @@ export class GithubHook extends Hook {
           this.onWebhook(payload);
         });
       },
-      { probot, webhooksPath: "/github" }
+      { probot }
     );
-    express.use(middleware);
+    express.use("/github", middleware);
   }
 
   async onWebhook(payload) {
