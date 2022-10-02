@@ -25,7 +25,11 @@ export class SlackHook extends Hook {
 
   constructor({ appToken, token, signingSecret, express }: SlackHookOptions) {
     super();
-    this.receiver = new ExpressReceiver({ signingSecret, app: express, endpoints: '/' });
+    this.receiver = new ExpressReceiver({
+      signingSecret,
+      app: express,
+      endpoints: "/slack",
+    });
     this.app = new App({
       receiver: this.receiver,
       appToken,
@@ -33,10 +37,9 @@ export class SlackHook extends Hook {
       signingSecret,
     });
     this.app.command("/moonbot", ({ client, body, ack }) => {
-      debug(`Received command moonbot`);
+      debug(`Received command moonbot: ${body.text}`);
       return this.handleCommand(body, client, ack);
     });
-    this.isReady = this.app.start().then(() => this);
   }
 
   private async handleCommand(
@@ -44,17 +47,20 @@ export class SlackHook extends Hook {
     client: WebClient,
     ack: AckFn<string>
   ) {
-    await ack();
-
     const keyword = body.command;
+
+    const parts = body.text.split(" ");
+    if (parts.length < 1) {
+      await ack("Missing command");
+      return;
+    }
+    await ack();
     this.emit(
       "command",
-      { keyword, parameters: { cmdLine: body.text.slice(1) } },
+      { keyword, parameters: { cmdLine: body.text } },
       new SlackReporter(client, body.channel_id)
     );
   }
 
-  override async destroy() {
-    await this.app.stop();
-  }
+  override async destroy() {}
 }

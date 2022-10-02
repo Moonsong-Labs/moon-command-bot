@@ -125,6 +125,7 @@ export async function main() {
         privateKey: moonbeamPrivateKey,
         appId: process.env.MOONBEAM_APP_ID,
         express: app,
+        octoRepos: Object.values(octoServices),
       })
     );
   }

@@ -5,6 +5,9 @@ import { Express } from "express";
 import { Hook } from "./hook";
 import Debug from "debug";
 import { OctokitService } from "../utils/github";
+import { IssueCommentEvent } from "@octokit/webhooks-types";
+import { Octokit } from "octokit";
+import { GithubReporter } from "../reporters/github-reporter";
 const debug = Debug("hooks:github");
 
 interface GithubHookOptions {
@@ -12,19 +15,22 @@ interface GithubHookOptions {
   appId: string;
   webhookSecret: string;
   express: Express;
+  // List of repos currently allowed
+  octoRepos: OctokitService[];
 }
 
-async function startServer() {}
-
 export class GithubHook extends Hook {
+  private octoRepos: OctokitService[];
+
   constructor({
     privateKey,
     webhookSecret,
     appId,
     express,
+    octoRepos,
   }: GithubHookOptions) {
     super();
-
+    this.octoRepos = octoRepos;
     const probot = new Probot({
       appId,
       privateKey: privateKey,
@@ -33,8 +39,8 @@ export class GithubHook extends Hook {
 
     const middleware = createNodeMiddleware(
       (app) => {
-        app.on(`issue_comment`, async ({ payload }) => {
-          this.onWebhook(payload);
+        app.on(`issue_comment`, async ({ octokit, payload, issue }) => {
+          this.onWebhook(issue, payload);
         });
       },
       { probot }
@@ -42,7 +48,7 @@ export class GithubHook extends Hook {
     express.use("/github", middleware);
   }
 
-  async onWebhook(payload) {
+  async onWebhook(reply: ({ body }) => void, payload: IssueCommentEvent) {
     let commentText = payload.comment.body;
     debug(`Received text: ${commentText}`);
     if (!commentText.startsWith("/")) {
@@ -57,23 +63,22 @@ export class GithubHook extends Hook {
     const cmdLine = parts.join(" ");
     debug(`Running cmd: ${cmdLine}`);
 
-    // this.emit(
-    //   "command",
-    //   { keyword: parts[0], parameters: { cmdLine } },
-    //   new HTMLStreamer(res)
-    // );
+    const octoRepo = this.octoRepos.find(
+      ({ owner, repo }) =>
+        `${owner}/${repo}`.toLocaleLowerCase() ==
+        payload.repository.full_name.toLocaleLowerCase()
+    );
 
-    // const triggerCommands = { "/bench": 1, "/fork-test": 2 };
-    // const triggerCommand = Object.keys(triggerCommands).find((command) =>
-    //   commentText.startsWith(command)
-    // );
-    // if (
-    //   !payload.issue.hasOwnProperty("pull_request") ||
-    //   payload.action !== "created" ||
-    //   !triggerCommand
-    // ) {
-    //   return;
-    // }
+    if (!octoRepo) {
+      reply({ body: "Repository not supported by the bot" });
+      return;
+    }
+
+    this.emit(
+      "command",
+      { keyword: parts[0], parameters: { cmdLine } },
+      new GithubReporter(octoRepo, payload.comment.id)
+    );
   }
 
   override async destroy() {}
