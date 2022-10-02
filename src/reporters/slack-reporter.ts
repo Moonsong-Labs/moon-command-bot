@@ -16,8 +16,8 @@ export class SlackReporter extends Reporter {
   private messageBlocks: {
     header?: KnownBlock;
     progress?: KnownBlock;
-    logs?: KnownBlock[];
-    attachments?: KnownBlock[];
+    logs: KnownBlock[];
+    attachments: KnownBlock[];
   };
 
   constructor(client: WebClient, channelId: string) {
@@ -25,7 +25,7 @@ export class SlackReporter extends Reporter {
     this.client = client;
     this.channelId = channelId;
     this.attachments = [];
-    this.messageBlocks = {};
+    this.messageBlocks = { logs: [], attachments: [] };
     this.status = "failure";
   }
 
@@ -58,7 +58,7 @@ export class SlackReporter extends Reporter {
       blocks.push(this.messageBlocks.progress);
     }
 
-    if (this.messageBlocks.logs) {
+    if (this.messageBlocks.logs.length > 0) {
       blocks.push({ type: "divider" });
       blocks.push({
         type: "section",
@@ -66,7 +66,7 @@ export class SlackReporter extends Reporter {
       });
       blocks.push(...this.messageBlocks.logs);
     }
-    if (this.messageBlocks.attachments) {
+    if (this.messageBlocks.attachments.length > 0) {
       blocks.push({ type: "divider" });
       blocks.push({
         type: "section",
