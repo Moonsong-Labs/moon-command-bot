@@ -10,14 +10,13 @@ export class SlackReporter extends Reporter {
   private channelId: string;
   private messageTsPromise: Promise<string>;
   private attachments: string[];
+  private logs: string[];
   private status: "success" | "failure";
 
   private messageText: string;
   private messageBlocks: {
     header?: KnownBlock;
     progress?: KnownBlock;
-    logs: KnownBlock[];
-    attachments: KnownBlock[];
   };
 
   constructor(client: WebClient, channelId: string) {
@@ -25,7 +24,8 @@ export class SlackReporter extends Reporter {
     this.client = client;
     this.channelId = channelId;
     this.attachments = [];
-    this.messageBlocks = { logs: [], attachments: [] };
+    this.logs = [];
+    this.messageBlocks = {};
     this.status = "failure";
   }
 
@@ -36,9 +36,18 @@ export class SlackReporter extends Reporter {
 
   protected async onCreate(title: string, cmdLine: string) {
     this.messageText = `${title}\n${cmdLine}`;
+    const emoji =
+      this.status == "success"
+        ? ":white_check_mark:"
+        : this.status == "failure"
+        ? ":x:"
+        : ":gear:";
     this.messageBlocks.header = {
       type: "header",
-      text: { type: "plain_text", text: `#${this.task.id} - ${title}` },
+      text: {
+        type: "plain_text",
+        text: `${emoji} #${this.task.id} - ${title}`,
+      },
     };
     this.postMessage();
   }
@@ -58,24 +67,31 @@ export class SlackReporter extends Reporter {
       blocks.push(this.messageBlocks.progress);
     }
 
-    if (this.messageBlocks.logs.length > 0) {
+    if (this.logs.length > 0) {
       blocks.push({ type: "divider" });
       blocks.push({
         type: "section",
         text: { type: "mrkdwn", text: " :newspaper: *Logs* :newspaper:" },
       });
-      blocks.push(...this.messageBlocks.logs);
+      blocks.push({
+        type: "section",
+        text: { type: "mrkdwn", text: `${this.logs.join("  \n")}` },
+      });
     }
-    if (this.messageBlocks.attachments.length > 0) {
+    if (this.attachments.length > 0) {
       blocks.push({ type: "divider" });
       blocks.push({
         type: "section",
+
         text: {
           type: "mrkdwn",
           text: " :file_folder: *Attachments* :file_folder:",
         },
       });
-      blocks.push(...this.messageBlocks.attachments);
+      blocks.push({
+        type: "section",
+        text: { type: "mrkdwn", text: `${this.attachments.join("  \n")}` },
+      });
     }
     await this.client.chat.update({
       channel: this.channelId,
@@ -92,8 +108,8 @@ export class SlackReporter extends Reporter {
       elements: [
         {
           text: `*${new Date().toISOString()}*  |  [${
-            ("".padStart(percent / 20), "#")
-          }${("".padStart(20 - percent / 20), "#")}] ${percent
+            ("".padStart(percent / 5), "#")
+          }${("".padStart(20 - percent / 5), "#")}] ${percent
             .toString()
             .padStart(3, " ")}%${message ? ` -  ${message}` : ""}`,
           type: "mrkdwn",
@@ -104,17 +120,10 @@ export class SlackReporter extends Reporter {
   }
 
   protected async onLog(level: TaskLogLevel, message: string) {
-    this.messageBlocks.logs.push({
-      type: "section",
-      text: { type: "mrkdwn", text: `${level}: ${message}` },
-    });
+    this.logs.push(`${level}: ${message}`);
   }
 
   protected async onAttachment(filePath: string) {
-    this.messageBlocks.logs.push({
-      type: "section",
-      text: { type: "mrkdwn", text: `${filePath}` },
-    });
     this.attachments.push(filePath);
   }
 
