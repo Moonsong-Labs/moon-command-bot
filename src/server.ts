@@ -86,7 +86,7 @@ export async function main() {
   const sampleFactory = new SampleFactory("sample");
   const benchmarkFactory = new BenchmarkFactory("benchmark", octoServices);
 
-  const taskHistory = new TaskHistory(10);
+  const taskHistory = new TaskHistory(1000);
 
   const commander = new Commander([sampleFactory, benchmarkFactory]);
   const hooks: Hook[] = [new HttpHook({ port: 8000 })];
