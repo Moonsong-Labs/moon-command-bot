@@ -43,7 +43,7 @@ export class BlockTimeTask extends Task {
           "log",
           "info",
           `${(
-            await api.query.systen.chain()
+            await api.query.system.chain()
           ).toString()}: #${block} (+${blockCount}) - ${date.format(
             "dddd, MMMM Do YYYY, h:mm:ss a"
           )}`
