@@ -73,6 +73,7 @@ export class Commander implements Service {
         debug(`Service ${keyword} queued (position: ${this.taskQueue.size})\n`);
         await this.taskQueue
           .add(async () => {
+            task.emit("start");
             debug(`Starting ${keyword}-${task.id}\n`);
             try {
               debug(`Executing ${keyword}-${task.id}\n`);
