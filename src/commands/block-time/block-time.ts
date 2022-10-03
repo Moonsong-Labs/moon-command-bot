@@ -1,6 +1,6 @@
 import { ApiPromise } from "@polkadot/api";
 import { Task } from "../task";
-import { moment } from 'moment-parseplus';
+import { moment } from "moment-parseplus";
 
 import Debug from "debug";
 import { computeBlockForMoment } from "../../actions/block-time";
@@ -25,8 +25,12 @@ export class BlockTimeTask extends Task {
     }
 
     if (subcommand == "at") {
-      debug(`Checking time at "${additional.join(" ")}"`);
       const targetDate = moment(additional.join(" "));
+      debug(
+        `Checking time for "${additional.join(
+          " "
+        )}", found ${targetDate.toISOString()}`
+      );
       if (targetDate.isBefore(moment())) {
         throw new Error("Cannot (yet) compute past date blocks");
       }
@@ -40,15 +44,11 @@ export class BlockTimeTask extends Task {
           api,
           targetDate
         );
-        debug(`await api.query.system`);
-        debug(api.query.system)
-        debug(api.query.chain)
-        debug(await api.query.system.chain)
         this.emit(
           "log",
           "info",
           `${(
-            await api.query.system.chain
+            await api.rpc.system.chain()
           ).toString()}: #${block} (+${blockCount}) - ${date.format(
             "dddd, MMMM Do YYYY, h:mm:ss a"
           )}`
