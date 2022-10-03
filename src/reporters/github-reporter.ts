@@ -52,6 +52,7 @@ export class GithubReporter extends Reporter {
           return issueComment.data.id;
         })
     );
+    await this.commentIdPromise;
   }
 
   private async updateReply() {

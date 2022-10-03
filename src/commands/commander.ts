@@ -56,7 +56,7 @@ export class Commander implements Service {
     const task = factory.createTask(this.taskIndex++);
 
     // We delay the execution so we can have reporters listening to events;
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         task.emit(
           "create",
@@ -71,10 +71,11 @@ export class Commander implements Service {
         }
 
         debug(`Service ${keyword} queued (position: ${this.taskQueue.size})\n`);
-        this.taskQueue.add(async () => {
+        await this.taskQueue.add(async () => {
           task.emit("start");
           debug(`Starting ${keyword}-${task.id}\n`);
           try {
+            debug(`Executing ${keyword}-${task.id}\n`);
             await task.execute(parameters);
             debug(`Executed ${keyword}-${task.id}\n`);
             task.emit("success");

@@ -14,6 +14,7 @@ export class SampleTask extends Task {
   }
 
   public async execute(_: { [name: string]: string }) {
+    debug(`execute sample`);
     for (const i of new Array(10).fill(0).map((_, i) => i)) {
       if (this.cancelled) {
         return;

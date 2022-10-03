@@ -62,6 +62,7 @@ export class SlackReporter extends Reporter {
         this.ackFallback(e.message);
       }
     });
+    await this.messageTsPromise;
   }
 
   private async updateMessage() {
@@ -84,7 +85,7 @@ export class SlackReporter extends Reporter {
     this.status = "failure";
     this.title = message || `Invalid task`;
     this.messageText = message || `Invalid task`;
-    this.pQueue.add(() => this.ackFallback(this.messageText));
+    await this.pQueue.add(() => this.ackFallback(this.messageText));
   }
 
   protected async onCreate(title: string, cmdLine: string, link: string) {
