@@ -48,7 +48,6 @@ export class SlackReporter extends Reporter {
   }
 
   private async postMessage() {
-    debug(`Posting message`);
     try {
       this.messageTsPromise = this.pQueue.add(async () => {
         return this.client.chat
@@ -61,12 +60,10 @@ export class SlackReporter extends Reporter {
       await this.messageTsPromise;
     } catch (e) {
       debug(`Error posting message: ${e.message}`);
-      this.ackFallback(e.message);
     }
   }
 
   private async updateMessage() {
-    debug(`Updating message`);
     try {
       await this.pQueue.add(async () => {
         await this.client.chat.update({
@@ -77,7 +74,6 @@ export class SlackReporter extends Reporter {
       });
     } catch (e) {
       debug(`Error updating message: ${e.message}`);
-      this.ackFallback(e.message);
     }
   }
 
@@ -85,7 +81,11 @@ export class SlackReporter extends Reporter {
     this.status = "failure";
     this.title = message || `Invalid task`;
     this.messageText = message || `Invalid task`;
-    await this.pQueue.add(() => this.ackFallback(this.messageText));
+    try {
+      await this.pQueue.add(() => this.ackFallback(this.messageText));
+    } catch (e) {
+      debug(`Error ack : ${e.message}`);
+    }
   }
 
   protected async onCreate(title: string, cmdLine: string, link: string) {
