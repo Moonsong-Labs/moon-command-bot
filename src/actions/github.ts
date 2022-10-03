@@ -23,7 +23,12 @@ export const cloneMoonbeam = async function (
   } catch (error) {
     // if dest path has a .git dir, ignore
     // this error handling prevents subsequent git commands from interacting with the wrong repo
-    if (!(await fs.lstat(repoDirectory + "/.git")).isDirectory()) {
+    debug(
+      `failed to clone: checking .git ${(
+        await fs.lstat(path.join(repoDirectory, "/.git"))
+      ).isDirectory()}`
+    );
+    if (!(await fs.lstat(path.join(repoDirectory, "/.git"))).isDirectory()) {
       throw error;
     }
   }
