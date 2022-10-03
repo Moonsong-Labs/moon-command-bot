@@ -71,21 +71,25 @@ export class Commander implements Service {
         }
 
         debug(`Service ${keyword} queued (position: ${this.taskQueue.size})\n`);
-        await this.taskQueue.add(async () => {
-          task.emit("start");
-          debug(`Starting ${keyword}-${task.id}\n`);
-          try {
-            debug(`Executing ${keyword}-${task.id}\n`);
-            await task.execute(parameters);
-            debug(`Executed ${keyword}-${task.id}\n`);
-            task.emit("success");
-          } catch (error) {
-            console.log(`Failure running ${keyword}: ${error.message}`);
-            task.emit("failure", error.message);
-          }
-          debug(`Ending ${keyword}-${task.id}\n`);
-          task.emit("end", timings);
-        });
+        await this.taskQueue
+          .add(async () => {
+            task.emit("start");
+            debug(`Starting ${keyword}-${task.id}\n`);
+            try {
+              debug(`Executing ${keyword}-${task.id}\n`);
+              await task.execute(parameters);
+              debug(`Executed ${keyword}-${task.id}\n`);
+              task.emit("success");
+            } catch (error) {
+              console.log(`Failure running ${keyword}: ${error.message}`);
+              task.emit("failure", error.message);
+            }
+            debug(`Ending ${keyword}-${task.id}\n`);
+            task.emit("end", timings);
+          })
+          .catch((e) => {
+            console.log(`queue failed: ${e.message}`);
+          });
       } catch (e) {
         console.trace(`Panic !!: ${e.message}`);
       }

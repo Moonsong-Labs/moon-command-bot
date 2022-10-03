@@ -16,6 +16,7 @@ export class SampleTask extends Task {
   public async execute(_: { [name: string]: string }) {
     debug(`execute sample`);
     await new Promise((resolve) => setTimeout(resolve, 10000));
+    debug(`execute sample 2`);
     for (const i of new Array(10).fill(0).map((_, i) => i)) {
       if (this.cancelled) {
         return;
