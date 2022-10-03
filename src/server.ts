@@ -47,8 +47,7 @@ export async function destroy() {
   console.log("Bye");
 }
 
-// TODO: add "uncaughtException", "unhandledRejection", 
-for (const event of ["SIGINT"]) {
+for (const event of ["uncaughtException", "unhandledRejection", "SIGINT"]) {
   const handleQuit = async (error, origin) => {
     console.log(error);
     if (isTerminating) {
