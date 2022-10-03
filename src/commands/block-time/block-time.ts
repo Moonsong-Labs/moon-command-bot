@@ -1,6 +1,6 @@
 import { ApiPromise } from "@polkadot/api";
 import { Task } from "../task";
-import moment from "moment";
+import { moment } from 'moment-parseplus';
 
 import Debug from "debug";
 import { computeBlockForMoment } from "../../actions/block-time";
@@ -40,11 +40,15 @@ export class BlockTimeTask extends Task {
           api,
           targetDate
         );
+        debug(`await api.query.system`);
+        debug(api.query.system)
+        debug(api.query.chain)
+        debug(await api.query.system.chain)
         this.emit(
           "log",
           "info",
           `${(
-            await api.query.system.chain()
+            await api.query.system.chain
           ).toString()}: #${block} (+${blockCount}) - ${date.format(
             "dddd, MMMM Do YYYY, h:mm:ss a"
           )}`
