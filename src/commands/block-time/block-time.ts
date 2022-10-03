@@ -39,10 +39,12 @@ export class BlockTimeTask extends Task {
           this.emit(
             "log",
             "info",
-            `${name
-              .padStart(this.namePadding, " ")
-              .toString()}: #${blockNumber} (${
-              blockCount > 0 ? `+${blockCount}` : `${blockCount}`
+            `${name.padStart(this.namePadding, " ").toString()}: #${blockNumber
+              .toString()
+              .padEnd(10, " ")} (${
+              blockCount > 0
+                ? `+${blockCount.toString().padEnd(10, " ")}`
+                : `${blockCount.toString().padEnd(10, " ")}`
             }) - ${date.format("dddd, MMMM Do YYYY, h:mm:ss a")}`
           );
           this.emit(
@@ -72,12 +74,11 @@ export class BlockTimeTask extends Task {
       this.emit(
         "log",
         "info",
-        `${name.padStart(
-          this.namePadding,
-          " "
-        )}: #${block} (+${blockCount}) - ${date.format(
-          "dddd, MMMM Do YYYY, h:mm:ss a"
-        )}`
+        `${name.padStart(this.namePadding, " ")}: #${block
+          .toString()
+          .padEnd(10, " ")} (+${blockCount
+          .toString()
+          .padEnd(10, " ")}) - ${date.format("dddd, MMMM Do YYYY, h:mm:ss a")}`
       );
       this.emit(
         "progress",
