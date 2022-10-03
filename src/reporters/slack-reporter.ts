@@ -97,18 +97,21 @@ export class SlackReporter extends Reporter {
           text: `${emoji} #${this.task.id} - ${this.title}`,
         },
       },
-      {
-        type: "context",
-        elements: [{ text: `${this.cmdLine}`, type: "plain_text" }],
-      },
     ];
 
     if (this.messageBlocks.progress) {
       blocks.push(this.messageBlocks.progress);
     }
+    blocks.push({ type: "divider" });
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `\`\`\`\n${this.logs.join("  \n")}\n\`\`\``,
+      },
+    });
 
     if (this.logs.length > 0) {
-      blocks.push({ type: "divider" });
       blocks.push({
         type: "section",
         text: { type: "mrkdwn", text: " :newspaper: *Logs* :newspaper:" },
@@ -146,7 +149,6 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
-        { text: `${this.cmdLine}`, type: "plain_text" },
         {
           text: `*${new Date().toISOString()}* | <${
             this.link
@@ -176,7 +178,6 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
-        { text: `${this.cmdLine}`, type: "plain_text" },
         {
           text: `*${new Date().toISOString()}* | <${
             this.link
@@ -191,7 +192,6 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
-        { text: `${this.cmdLine}`, type: "plain_text" },
         {
           text: `*${new Date().toISOString()}* | <${
             this.link
