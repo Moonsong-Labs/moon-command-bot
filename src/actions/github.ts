@@ -12,36 +12,41 @@ export const cloneMoonbeam = async function (
   repo: string,
   directory: string
 ): Promise<string> {
-  await fs.mkdir(directory, { recursive: true });
-  const repoDirectory = path.join(directory, repo);
-  debug(`push domain: ${authorizedUrl.replace(/token[^@]*@/g, "")}`);
   try {
-    await runTask(
-      `git clone ${authorizedUrl}/${owner}/${repo} ${repoDirectory}`,
-      { cwd: directory }
-    );
-  } catch (error) {
-    // if dest path has a .git dir, ignore
-    // this error handling prevents subsequent git commands from interacting with the wrong repo
-    debug(
-      `failed to clone: checking .git ${(
-        await fs.lstat(path.join(repoDirectory, "/.git"))
-      ).isDirectory()}`
-    );
-    if (!(await fs.lstat(path.join(repoDirectory, "/.git"))).isDirectory()) {
-      throw error;
+    await fs.mkdir(directory, { recursive: true });
+    const repoDirectory = path.join(directory, repo);
+    debug(`push domain: ${authorizedUrl.replace(/token[^@]*@/g, "")}`);
+    try {
+      await runTask(
+        `git clone ${authorizedUrl}/${owner}/${repo} ${repoDirectory}`,
+        { cwd: directory }
+      );
+    } catch (error) {
+      // if dest path has a .git dir, ignore
+      // this error handling prevents subsequent git commands from interacting with the wrong repo
+      debug(
+        `failed to git clone: checking .git ${(
+          await fs.lstat(path.join(repoDirectory, "/.git"))
+        ).isDirectory()}: ${error}`
+      );
+      if (!(await fs.lstat(path.join(repoDirectory, "/.git"))).isDirectory()) {
+        throw new Error(`Cannot clone ${owner}/${repo}`);
+      }
     }
+
+    await runTask("git submodule update --init", { cwd: repoDirectory });
+    await runTask("git add . && git reset --hard HEAD", { cwd: repoDirectory });
+    const detachedHead = (
+      await runTask("git rev-parse HEAD", { cwd: repoDirectory })
+    ).trim();
+
+    // Check out to the detached head so that any branch can be deleted
+    await runTask(`git checkout ${detachedHead}`, { cwd: repoDirectory });
+    return repoDirectory;
+  } catch (error) {
+    debug(`Failed to clone ${owner}/${repo}: ${error}`);
+    throw new Error(`Cannot clone ${owner}/${repo}`);
   }
-
-  await runTask("git submodule update --init", { cwd: repoDirectory });
-  await runTask("git add . && git reset --hard HEAD", { cwd: repoDirectory });
-  const detachedHead = (
-    await runTask("git rev-parse HEAD", { cwd: repoDirectory })
-  ).trim();
-
-  // Check out to the detached head so that any branch can be deleted
-  await runTask(`git checkout ${detachedHead}`, { cwd: repoDirectory });
-  return repoDirectory;
 };
 
 export const addRemote = async function (
@@ -51,14 +56,19 @@ export const addRemote = async function (
   owner: string,
   repo: string
 ): Promise<void> {
-  debug(`Add remote ${remoteName} ${owner}/${repo}`);
-  await runTask(`git remote remove ${remoteName} || true`, {
-    cwd: repositoryPath,
-  });
-  await runTask(
-    `git remote add ${remoteName} ${authorizedUrl}/${owner}/${repo}.git`,
-    { cwd: repositoryPath }
-  );
+  try {
+    debug(`Add remote ${remoteName} ${owner}/${repo}`);
+    await runTask(`git remote remove ${remoteName} || true`, {
+      cwd: repositoryPath,
+    });
+    await runTask(
+      `git remote add ${remoteName} ${authorizedUrl}/${owner}/${repo}.git`,
+      { cwd: repositoryPath }
+    );
+  } catch (error) {
+    debug(`Failed to add remote ${owner}/${repo}: ${error}`);
+    throw new Error(`Failed to add remote ${owner}/${repo}`);
+  }
 };
 
 export const setupBranch = async function (
@@ -66,24 +76,34 @@ export const setupBranch = async function (
   remoteName: string,
   branch: string
 ): Promise<void> {
-  debug(`Setup branch ${branch}`);
-  // Fetch and recreate the PR's branch
-  await runTask(`git branch -D ${branch} || true`, { cwd: repositoryPath });
-  await runTask(
-    `git fetch ${remoteName} ${branch} && git checkout --track ${remoteName}/${branch}`,
-    { cwd: repositoryPath },
-    `Checking out ${branch}...`
-  );
-  await runTask(
-    `git branch | grep ${branch} && git checkout ${branch} || git checkout -b ${branch}`,
-    { cwd: repositoryPath }
-  );
+  try {
+    debug(`Setup branch ${branch}`);
+    // Fetch and recreate the PR's branch
+    await runTask(`git branch -D ${branch} || true`, { cwd: repositoryPath });
+    await runTask(
+      `git fetch ${remoteName} ${branch} && git checkout --track ${remoteName}/${branch}`,
+      { cwd: repositoryPath },
+      `Checking out ${branch}...`
+    );
+    await runTask(
+      `git branch | grep ${branch} && git checkout ${branch} || git checkout -b ${branch}`,
+      { cwd: repositoryPath }
+    );
+  } catch (error) {
+    debug(`Failed to setup branch ${branch}: ${error}`);
+    throw new Error(`Failed to setup branch ${branch}`);
+  }
 };
 
 export const createBranch = async function (
   repositoryPath: string,
   branch: string
 ): Promise<void> {
-  debug(`Create branch ${branch}`);
-  await runTask(`git checkout -b ${branch}`, { cwd: repositoryPath });
+  try {
+    debug(`Create branch ${branch}`);
+    await runTask(`git checkout -b ${branch}`, { cwd: repositoryPath });
+  } catch (error) {
+    debug(`Failed to create branch ${branch}: ${error}`);
+    throw new Error(`Failed to create branch ${branch}`);
+  }
 };
