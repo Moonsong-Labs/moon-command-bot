@@ -105,10 +105,7 @@ export class SlackReporter extends Reporter {
     blocks.push({ type: "divider" });
     blocks.push({
       type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `\`\`\`\n${this.logs.join("  \n")}\n\`\`\``,
-      },
+      text: { type: "mrkdwn", text: `\`/moonbot ${this.cmdLine}` },
     });
 
     if (this.logs.length > 0) {
