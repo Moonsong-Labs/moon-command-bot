@@ -9,7 +9,7 @@ import { Task } from "../task";
 import { runTask } from "../../actions/runner";
 
 import Debug from "debug";
-const debug = Debug("commands:benchmarking");
+const debug = Debug("commands:benchmark");
 
 export interface BenchmarkConfig {
   moonbeamRepo: OctokitService;

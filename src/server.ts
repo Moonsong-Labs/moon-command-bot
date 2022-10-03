@@ -13,6 +13,8 @@ import { TaskHistory } from "./utils/task-history";
 import { SlackHook } from "./hooks/slack-hook";
 import { TaskFactory } from "./commands/factory";
 import { GithubHook } from "./hooks/github-hook";
+import { BlockTimeFactory } from "./commands/block-time/factory";
+import { getApiFor } from "moonbeam-tools";
 
 let isTerminating = false;
 
@@ -99,12 +101,14 @@ export async function main() {
   const app = express();
   server = new http.Server(app);
 
-  const sampleFactory = new SampleFactory("sample");
-  const benchmarkFactory = new BenchmarkFactory("benchmark", octoServices);
+  factories = [
+    new SampleFactory("sample"),
+    new BenchmarkFactory("benchmark", octoServices),
+    new BlockTimeFactory("block-time", ["alphanet", "moonriver", "moonbeam"]),
+  ];
 
   const taskHistory = new TaskHistory(1000);
 
-  const commander = new Commander([sampleFactory, benchmarkFactory]);
   const hooks: Hook[] = [new HttpHook({ express: app })];
   if (process.env.SLACK_APP_TOKEN) {
     console.log(`- Enable Slack hook`);
@@ -130,6 +134,11 @@ export async function main() {
     );
   }
 
+  const commander = new Commander(factories);
+
+  await Promise.all(factories.map((factory) => factory.isReady));
+  await Promise.all(hooks.map((hook) => hook.isReady));
+
   for (const hook of hooks) {
     hook.on("command", (data, reporter: Reporter) => {
       try {
@@ -150,8 +159,6 @@ export async function main() {
   server = app.listen(port, () => {
     console.log(`The HTTP application is listening on port ${port}!`);
   });
-
-  await Promise.all(hooks.map((hook) => hook.isReady));
 
   console.log(`Ready !!`);
 }

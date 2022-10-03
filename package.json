@@ -23,6 +23,7 @@
     "debug": "^4.3.4",
     "express": "^4.18.1",
     "moment": "^2.29.4",
+    "moonbeam-tools": "^0.0.29",
     "octokit": "^2.0.7",
     "p-queue": "^6.6.2",
     "probot": "^12.2.8",
