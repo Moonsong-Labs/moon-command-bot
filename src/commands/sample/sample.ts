@@ -14,20 +14,15 @@ export class SampleTask extends Task {
   }
 
   public async execute(_: { [name: string]: string }) {
-    debug(`execute sample`);
     await new Promise((resolve) => setTimeout(resolve, 10000));
-    debug(`execute sample 2`);
     for (const i of new Array(10).fill(0).map((_, i) => i)) {
       if (this.cancelled) {
         return;
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      debug(`Sedning progess ${10 * i}`);
       this.emit("progress", 10 * i, `Timer ${i}`);
-      debug(`Sedning log ${10 * i}`);
       this.emit("log", "debug", `Moving to timer ${i}`);
     }
-    debug(`Sedning final progess`);
     this.emit("progress", 100, `Success`);
   }
 
