@@ -1,5 +1,7 @@
 import { Writable } from "node:stream";
 import { Task } from "../task";
+import Debug from "debug";
+const debug = Debug("commands:sample");
 
 export class SampleTask extends Task {
   public isReady: Promise<SampleTask>;
@@ -17,9 +19,12 @@ export class SampleTask extends Task {
         return;
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      debug(`Sedning progess ${10 * i}`);
       this.emit("progress", 10 * i, `Timer ${i}`);
+      debug(`Sedning log ${10 * i}`);
       this.emit("log", "debug", `Moving to timer ${i}`);
     }
+    debug(`Sedning final progess ${10 * i}`);
     this.emit("progress", 100, `Success`);
   }
 

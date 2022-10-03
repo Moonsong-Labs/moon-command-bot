@@ -76,6 +76,7 @@ export class Commander implements Service {
           debug(`Starting ${keyword}-${task.id}\n`);
           try {
             await task.execute(parameters);
+            debug(`Executed ${keyword}-${task.id}\n`);
             task.emit("success");
           } catch (error) {
             console.log(`Failure running ${keyword}: ${error.message}`);
