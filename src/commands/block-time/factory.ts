@@ -1,10 +1,10 @@
 import { TaskFactory } from "../factory";
-import { BlockTimeTask } from "./block-time";
+import { BlockTimeTask, NetworkConfig } from "./block-time";
 import { ApiPromise } from "@polkadot/api";
 import { getApiFor } from "moonbeam-tools";
 
 export class BlockTimeFactory extends TaskFactory {
-  private networkApis: ApiPromise[];
+  private networkApis: NetworkConfig[];
 
   constructor(keyword: string, networks: string[]) {
     super(keyword);
@@ -12,8 +12,12 @@ export class BlockTimeFactory extends TaskFactory {
       getApiFor({ network: name })
     );
 
-    this.isReady = Promise.all(networkPromises).then((apis) => {
-      this.networkApis = apis;
+    this.isReady = Promise.all(networkPromises).then(async (apis) => {
+      this.networkApis = await Promise.all(
+        apis.map(async (api) => {
+          return { api, name: (await api.rpc.system.chain()).toString() };
+        })
+      );
       return this;
     });
   }

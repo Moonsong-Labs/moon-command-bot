@@ -6,15 +6,21 @@ import Debug from "debug";
 import { computeBlockForMoment, getBlockDate } from "../../actions/block-time";
 const debug = Debug("commands:blocktime");
 
+export interface NetworkConfig {
+  name: string;
+  api: ApiPromise;
+}
 export class BlockTimeTask extends Task {
-  private networkApis: ApiPromise[];
+  private networkApis: NetworkConfig[];
   public readonly name: string;
   private cancelled: boolean;
+  private namePadding: number;
 
-  constructor(keyword: string, id: number, networkApis: ApiPromise[]) {
+  constructor(keyword: string, id: number, networkApis: NetworkConfig[]) {
     super(keyword, id);
     this.networkApis = networkApis;
     this.cancelled = false;
+    this.namePadding = Math.max(...networkApis.map(({ name }) => name.length));
     this.name = `Block time`;
   }
 
@@ -28,12 +34,14 @@ export class BlockTimeTask extends Task {
       const blockNumber = parseInt(words[1]);
       let progress = 0;
       await Promise.all(
-        this.networkApis.map(async (api) => {
+        this.networkApis.map(async ({ api, name }) => {
           const { blockCount, date } = await getBlockDate(api, blockNumber);
           this.emit(
             "log",
             "info",
-            `${(await api.rpc.system.chain()).toString()}: #${blockNumber} (${
+            `${name
+              .padStart(this.namePadding, " ")
+              .toString()}: #${blockNumber} (${
               blockCount > 0 ? `+${blockCount}` : `${blockCount}`
             }) - ${date.format("dddd, MMMM Do YYYY, h:mm:ss a")}`
           );
@@ -49,7 +57,7 @@ export class BlockTimeTask extends Task {
       throw new Error("Cannot (yet) compute past date blocks");
     }
     let progress = 0;
-    await this.networkApis.map(async (api) => {
+    await this.networkApis.map(async ({ api, name }) => {
       if (this.cancelled) {
         throw new Error("Cancelled");
       }
@@ -60,9 +68,10 @@ export class BlockTimeTask extends Task {
       this.emit(
         "log",
         "info",
-        `${(
-          await api.rpc.system.chain()
-        ).toString()}: #${block} (+${blockCount}) - ${date.format(
+        `${name.padStart(
+          this.namePadding,
+          " "
+        )}: #${block} (+${blockCount}) - ${date.format(
           "dddd, MMMM Do YYYY, h:mm:ss a"
         )}`
       );
