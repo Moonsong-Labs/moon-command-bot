@@ -167,6 +167,9 @@ export async function benchmarkRuntime(config: BenchRunConfig) {
   const subCommandExtra = extraWords.join(" ").trim();
 
   const subCommandConfig = SubcommandConfigs[subCommand];
+  if (!subCommandConfig) {
+    throw new Error(`Unknown subcommand: ${subCommand}`);
+  }
 
   if (!checkCommandSanity(subCommandExtra)) {
     throw new Error(`Special characters not allowed`);
