@@ -24,7 +24,7 @@ export class SampleTask extends Task {
       debug(`Sedning log ${10 * i}`);
       this.emit("log", "debug", `Moving to timer ${i}`);
     }
-    debug(`Sedning final progess ${10 * i}`);
+    debug(`Sedning final progess`);
     this.emit("progress", 100, `Success`);
   }
 
