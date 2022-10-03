@@ -57,7 +57,12 @@ export class Commander implements Service {
 
     // We delay the execution so we can have reporters listening to events;
     setTimeout(() => {
-      task.emit("create", task.name, parameters.cmdLine, `${process.env.SERVICE_URL}/rest/tasks/${task.id}`);
+      task.emit(
+        "create",
+        task.name,
+        parameters.cmdLine,
+        `${process.env.SERVICE_URL}/rest/tasks/${task.id}`
+      );
 
       // Delay executing the task for the reporter to properly listen to the task
       if (this.taskQueue.size > 0) {
@@ -66,17 +71,21 @@ export class Commander implements Service {
 
       debug(`Service ${keyword} queued (position: ${this.taskQueue.size})\n`);
       this.taskQueue.add(async () => {
-        task.emit("start");
-        debug(`Starting ${keyword}-${task.id}\n`);
         try {
-          await task.execute(parameters);
-          task.emit("success");
-        } catch (error) {
-          console.log(`Failure running ${keyword}: ${error.message}`);
-          task.emit("failure", error.message);
+          task.emit("start");
+          debug(`Starting ${keyword}-${task.id}\n`);
+          try {
+            await task.execute(parameters);
+            task.emit("success");
+          } catch (error) {
+            console.log(`Failure running ${keyword}: ${error.message}`);
+            task.emit("failure", error.message);
+          }
+          debug(`Ending ${keyword}-${task.id}\n`);
+          task.emit("end", timings);
+        } catch (e) {
+          console.trace(`Panic !!: ${e.message}`);
         }
-        debug(`Ending ${keyword}-${task.id}\n`);
-        task.emit("end", timings);
       });
     }, 0);
     return task;
