@@ -140,7 +140,7 @@ export class SlackReporter extends Reporter {
       type: "context",
       elements: [
         {
-          text: `*${new Date().toISOString()}* | [report](${this.link}) | [${"".padStart(
+          text: `*${new Date().toISOString()}* | <${this.link}|report> | *Process* [${"".padStart(
             percent / 5,
             "#"
           )}${"".padStart(20 - percent / 5, " ")}] ${percent
@@ -167,7 +167,7 @@ export class SlackReporter extends Reporter {
       type: "context",
       elements: [
         {
-          text: `*${new Date().toISOString()}* | [report](${this.link}) | Success${
+          text: `*${new Date().toISOString()}* | <${this.link}|report> | *Success* ${
             message ? `: ${message}` : ""
           }`,
           type: "mrkdwn",
@@ -180,7 +180,7 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
-        { text: `*${new Date().toISOString()}* | [report](${this.link}) | Failure`, type: "mrkdwn" },
+        { text: `*${new Date().toISOString()}* | <${this.link}|report> | *Failure*`, type: "mrkdwn" },
       ],
     };
     if (message) {
