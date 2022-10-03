@@ -13,6 +13,7 @@ export class SlackReporter extends Reporter {
   private attachments: string[];
   private logs: string[];
   private title: string;
+  private cmdLine: string;
   private link: string;
 
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
@@ -30,6 +31,7 @@ export class SlackReporter extends Reporter {
     super();
     this.title = "";
     this.link = "";
+    this.cmdLine = "";
     this.pQueue = new PQueue({ concurrency: 1 });
     this.client = client;
     this.channelId = channelId;
@@ -70,6 +72,7 @@ export class SlackReporter extends Reporter {
 
   protected async onCreate(title: string, cmdLine: string, link: string) {
     this.messageText = `${title}\n${cmdLine}`;
+    this.cmdLine = cmdLine;
     this.title = title;
     this.link = link;
     this.status = "progress";
@@ -139,13 +142,16 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
+        { text: `${this.cmdLine}`, type: "plain_text" },
         {
-          text: `*${new Date().toISOString()}* | <${this.link}|report> | *Process* [${"".padStart(
-            percent / 5,
-            "#"
-          )}${"".padStart(20 - percent / 5, " ")}] ${percent
-            .toString()
-            .padStart(3, " ")}%${message ? ` -  ${message}` : ""}`,
+          text: `*${new Date().toISOString()}* | <${
+            this.link
+          }|report> | *Process* [${"".padStart(percent / 5, "#")}${"".padStart(
+            20 - percent / 5,
+            " "
+          )}] ${percent.toString().padStart(3, " ")}%${
+            message ? ` -  ${message}` : ""
+          }`,
           type: "mrkdwn",
         },
       ],
@@ -166,10 +172,11 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
+        { text: `${this.cmdLine}`, type: "plain_text" },
         {
-          text: `*${new Date().toISOString()}* | <${this.link}|report> | *Success* ${
-            message ? `: ${message}` : ""
-          }`,
+          text: `*${new Date().toISOString()}* | <${
+            this.link
+          }|report> | *Success* ${message ? `: ${message}` : ""}`,
           type: "mrkdwn",
         },
       ],
@@ -180,7 +187,13 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
-        { text: `*${new Date().toISOString()}* | <${this.link}|report> | *Failure*`, type: "mrkdwn" },
+        { text: `${this.cmdLine}`, type: "plain_text" },
+        {
+          text: `*${new Date().toISOString()}* | <${
+            this.link
+          }|report> | *Failure*`,
+          type: "mrkdwn",
+        },
       ],
     };
     if (message) {
