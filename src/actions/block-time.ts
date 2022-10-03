@@ -20,6 +20,31 @@ async function getFutureBlockDate(
     ).data
   );
 
+  // Too far in the future to compure accurately,
+  // will use ratio of past/expected to guess it
+  // TODO: will need to change once we go with 6s block time
+  if (diffCount > currentBlock.block.header.number.toNumber()) {
+    const firstBlock = await api.rpc.chain.getBlock(
+      (await api.rpc.chain.getBlockHash(1)).toString()
+    );
+
+    const firstTimestamp = api.registry.createType(
+      "Compact<u64>",
+      firstBlock.block.extrinsics.find(
+        (e) => e.method.section == "timestamp" && e.method.method == "set"
+      ).data
+    );
+
+    const expected =
+      currentBlock.block.header.number.toNumber() * 12 * 1000 * 1000;
+    const past = currentTimestamp.toNumber() - firstTimestamp.toNumber();
+    const expectedDate = new Date(
+      currentTimestamp.toNumber() +
+        (diffCount * 12 * 1000 * 1000 * past) / expected
+    );
+    return moment.utc(expectedDate);
+  }
+
   const previousBlock = await api.rpc.chain.getBlock(
     (
       await api.rpc.chain.getBlockHash(

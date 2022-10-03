@@ -1,6 +1,5 @@
 import { TaskFactory } from "../factory";
 import { BlockTimeTask, NetworkConfig } from "./block-time";
-import { ApiPromise } from "@polkadot/api";
 import { getApiFor } from "moonbeam-tools";
 
 export class BlockTimeFactory extends TaskFactory {
