@@ -37,7 +37,7 @@ export class BlockTimeTask extends Task {
               blockCount > 0 ? `+${blockCount}` : `${blockCount}`
             }) - ${date.format("dddd, MMMM Do YYYY, h:mm:ss a")}`
           );
-          this.emit("progress", (progress += 100 / networkNames.length));
+          this.emit("progress", (progress += 100 / this.networkApis.length));
         })
       );
     }
@@ -48,7 +48,6 @@ export class BlockTimeTask extends Task {
     if (targetDate.isBefore(moment())) {
       throw new Error("Cannot (yet) compute past date blocks");
     }
-    const networkNames = Object.keys(this.networkApis);
     let progress = 0;
     await this.networkApis.map(async (api) => {
       if (this.cancelled) {
@@ -67,7 +66,7 @@ export class BlockTimeTask extends Task {
           "dddd, MMMM Do YYYY, h:mm:ss a"
         )}`
       );
-      this.emit("progress", (progress += 100 / networkNames.length));
+      this.emit("progress", (progress += 100 / this.networkApis.length));
     });
   }
   async cancel() {
