@@ -49,7 +49,7 @@ export class SlackReporter extends Reporter {
 
   private async postMessage() {
     debug(`Posting message`);
-    this.messageTsPromise = this.pQueue.add(() => {
+    this.messageTsPromise = this.pQueue.add(async () => {
       try {
         return this.client.chat
           .postMessage({
