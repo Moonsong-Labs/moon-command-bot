@@ -2,13 +2,13 @@ import { ApiPromise } from "@polkadot/api";
 import { SignedBlock } from "@polkadot/types/interfaces";
 import moment, { Moment } from "moment";
 
-export async function getBlockDate(
+async function getFutureBlockDate(
   api: ApiPromise,
   blockNumber: number,
   currentBlock: SignedBlock
 ) {
   const diffCount = blockNumber - currentBlock.block.header.number.toNumber();
-  if (diffCount < 0) {
+  if (diffCount <= 0) {
     console.error("Block must be in the future");
     return;
   }
@@ -43,6 +43,43 @@ export async function getBlockDate(
   return moment.utc(expectedDate);
 }
 
+async function getPastBlockDate(
+  api: ApiPromise,
+  blockNumber: number,
+  currentBlock: SignedBlock
+) {
+  const diffCount = blockNumber - currentBlock.block.header.number.toNumber();
+  if (diffCount > 0) {
+    console.error("Block must be in the past");
+    return;
+  }
+
+  const pastBlock = await api.rpc.chain.getBlock(
+    (await api.rpc.chain.getBlockHash(blockNumber)).toString()
+  );
+  const timestampExt = pastBlock.block.extrinsics.find(
+    (e) => e.method.section == "timestamp" && e.method.method == "set"
+  );
+
+  const timestamp = api.registry.createType("Compact<u64>", timestampExt.data);
+  return moment.utc(timestamp.toNumber());
+}
+
+export async function getBlockDate(api: ApiPromise, blockNumber: number) {
+  const currentBlock = await api.rpc.chain.getBlock();
+  const currentBlockNumber = currentBlock.block.header.number.toNumber();
+  if (currentBlockNumber >= blockNumber) {
+    return {
+      blockCount: blockNumber - currentBlockNumber,
+      date: await getPastBlockDate(api, blockNumber, currentBlock),
+    };
+  }
+  return {
+    blockCount: blockNumber - currentBlockNumber,
+    date: await getFutureBlockDate(api, blockNumber, currentBlock),
+  };
+}
+
 export async function computeBlockForMoment(
   api: ApiPromise,
   targetDate: Moment
@@ -55,7 +92,7 @@ export async function computeBlockForMoment(
 
   do {
     targetBlock += Math.floor(targetDate.diff(evalDate) / 1000 / 12);
-    evalDate = await getBlockDate(api, targetBlock, currentBlock);
+    evalDate = await getFutureBlockDate(api, targetBlock, currentBlock);
 
     await new Promise((resolve) => setTimeout(resolve, 1));
   } while (Math.abs(evalDate.diff(targetDate)) > 1000 * 60 * 10);
