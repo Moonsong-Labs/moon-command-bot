@@ -13,6 +13,7 @@ export class SlackReporter extends Reporter {
   private attachments: string[];
   private logs: string[];
   private title: string;
+  private link: string;
 
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
@@ -28,6 +29,7 @@ export class SlackReporter extends Reporter {
   constructor(client: WebClient, channelId: string) {
     super();
     this.title = "";
+    this.link = "";
     this.pQueue = new PQueue({ concurrency: 1 });
     this.client = client;
     this.channelId = channelId;
@@ -66,9 +68,10 @@ export class SlackReporter extends Reporter {
     );
   }
 
-  protected async onCreate(title: string, cmdLine: string) {
+  protected async onCreate(title: string, cmdLine: string, link: string) {
     this.messageText = `${title}\n${cmdLine}`;
     this.title = title;
+    this.link = link;
     this.status = "progress";
     await this.postMessage();
   }
@@ -137,7 +140,7 @@ export class SlackReporter extends Reporter {
       type: "context",
       elements: [
         {
-          text: `*${new Date().toISOString()}*  |  [${"".padStart(
+          text: `*${new Date().toISOString()}* | [report](${this.link}) | [${"".padStart(
             percent / 5,
             "#"
           )}${"".padStart(20 - percent / 5, " ")}] ${percent
@@ -164,7 +167,7 @@ export class SlackReporter extends Reporter {
       type: "context",
       elements: [
         {
-          text: `*${new Date().toISOString()}*  | Success${
+          text: `*${new Date().toISOString()}* | [report](${this.link}) | Success${
             message ? `: ${message}` : ""
           }`,
           type: "mrkdwn",
@@ -177,7 +180,7 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.progress = {
       type: "context",
       elements: [
-        { text: `*${new Date().toISOString()}*  | Failure`, type: "mrkdwn" },
+        { text: `*${new Date().toISOString()}* | [report](${this.link}) | Failure`, type: "mrkdwn" },
       ],
     };
     if (message) {

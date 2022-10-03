@@ -57,7 +57,7 @@ export class Commander implements Service {
 
     // We delay the execution so we can have reporters listening to events;
     setTimeout(() => {
-      task.emit("create", task.name, parameters.cmdLine);
+      task.emit("create", task.name, parameters.cmdLine, `${process.env.SERVICE_URL}/rest/tasks/${task.id}`);
 
       // Delay executing the task for the reporter to properly listen to the task
       if (this.taskQueue.size > 0) {

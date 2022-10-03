@@ -131,7 +131,7 @@ export class HTMLStreamer extends Reporter {
     this.stream.end(`</body></html>`);
   }
 
-  protected async onCreate(title: string, cmdLine: string) {
+  protected async onCreate(title: string, cmdLine: string, link: string) {
     debug(`created`);
     this.updateElement("status", "created");
     this.updateElement("title", title || "task");

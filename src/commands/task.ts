@@ -4,8 +4,6 @@ import type TypedEmitter from "typed-emitter";
 export type TaskLogLevel = "debug" | "info" | "warn" | "error";
 
 export type TaskEvents = {
-  // When the task is created
-  create: (title: string, cmdLine: string) => void;
   // When the task is progressing
   progress: (percentage: number, message?: string) => void;
   // When the task emits attachments
@@ -14,6 +12,8 @@ export type TaskEvents = {
   attachment: (filePath?: string) => void;
 
   // The following events are controlled by the Commander;
+  // When the task is created
+  create: (title: string, cmdLine: string, link: string) => void;
   // When the task started
   start: () => void;
   // When the task is inserted or move in the queue

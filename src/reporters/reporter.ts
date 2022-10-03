@@ -20,8 +20,8 @@ export abstract class Reporter {
 
   public abstract reportInvalidTask(message?: string);
 
-  protected async onCreate(title: string, cmdLine: string) {
-    debug(`  - [${this.task.keyword}-${this.task.id}] Created: ${cmdLine}`);
+  protected async onCreate(title: string, cmdLine: string, link: string) {
+    debug(`  - [${this.task.keyword}-${this.task.id}] Created: ${cmdLine} | ${link}`);
   }
   protected async onQueue(position: number) {
     debug(`  - [${this.task.keyword}-${this.task.id}] Queued: ${position}`);

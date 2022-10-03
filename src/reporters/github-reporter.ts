@@ -71,8 +71,8 @@ export class GithubReporter extends Reporter {
     return this.updateReply();
   }
 
-  protected async onCreate(title: string, cmdLine: string) {
-    this.message = `${title}\n\ncmd: ${cmdLine}`;
+  protected async onCreate(title: string, cmdLine: string, link: string) {
+    this.message = `${title}  \n[Report](${link})\n\ncmd: ${cmdLine}`;
     this.reply();
   }
   protected async onStart() {
