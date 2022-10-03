@@ -49,37 +49,36 @@ export class SlackReporter extends Reporter {
 
   private async postMessage() {
     debug(`Posting message`);
-    this.messageTsPromise = this.pQueue.add(async () => {
-      try {
-        return "1";
-        // return this.client.chat
-        //   .postMessage({
-        //     ...this.buildMessageContent(),
-        //     channel: this.channelId,
-        //   })
-        //   .then((result) => result.message.ts);
-      } catch (e) {
-        debug(`Error posting message: ${e.message}`);
-        this.ackFallback(e.message);
-      }
-    });
-    await this.messageTsPromise;
+    try {
+      this.messageTsPromise = this.pQueue.add(async () => {
+        return this.client.chat
+          .postMessage({
+            ...this.buildMessageContent(),
+            channel: this.channelId,
+          })
+          .then((result) => result.message.ts);
+      });
+      await this.messageTsPromise;
+    } catch (e) {
+      debug(`Error posting message: ${e.message}`);
+      this.ackFallback(e.message);
+    }
   }
 
   private async updateMessage() {
     debug(`Updating message`);
-    await this.pQueue.add(async () => {
-      try {
-        // await this.client.chat.update({
-        //   ...this.buildMessageContent(),
-        //   channel: this.channelId,
-        //   ts: await this.messageTsPromise,
-        // });
-      } catch (e) {
-        debug(`Error updating message: ${e.message}`);
-        this.ackFallback(e.message);
-      }
-    });
+    try {
+      await this.pQueue.add(async () => {
+        await this.client.chat.update({
+          ...this.buildMessageContent(),
+          channel: this.channelId,
+          ts: await this.messageTsPromise,
+        });
+      });
+    } catch (e) {
+      debug(`Error updating message: ${e.message}`);
+      this.ackFallback(e.message);
+    }
   }
 
   public async reportInvalidTask(message?: string) {
