@@ -8,6 +8,7 @@ const debug = Debug("reporters:slack");
 
 export class SlackReporter extends Reporter {
   private client: WebClient;
+  private ackFallback: (body: string) => void;
   private channelId: string;
   private messageTsPromise: Promise<string>;
   private attachments: string[];
@@ -27,13 +28,18 @@ export class SlackReporter extends Reporter {
     progress?: KnownBlock;
   };
 
-  constructor(client: WebClient, channelId: string) {
+  constructor(
+    client: WebClient,
+    channelId: string,
+    ackFallback: (body: string) => void
+  ) {
     super();
     this.title = "";
     this.link = "";
     this.cmdLine = "";
     this.pQueue = new PQueue({ concurrency: 1 });
     this.client = client;
+    this.ackFallback = ackFallback;
     this.channelId = channelId;
     this.attachments = [];
     this.logs = [];
@@ -42,32 +48,39 @@ export class SlackReporter extends Reporter {
   }
 
   private async postMessage() {
-    this.messageTsPromise = this.pQueue.add(() =>
-      this.client.chat
-        .postMessage({ ...this.buildMessageContent(), channel: this.channelId })
-        .then((result) => result.message.ts)
-    );
+    this.messageTsPromise = this.pQueue.add(() => {
+      try {
+        return this.client.chat
+          .postMessage({
+            ...this.buildMessageContent(),
+            channel: this.channelId,
+          })
+          .then((result) => result.message.ts);
+      } catch (e) {
+        this.ackFallback(e.message);
+      }
+    });
   }
 
   private async updateMessage() {
-    await this.pQueue.add(async () =>
-      this.client.chat.update({
-        ...this.buildMessageContent(),
-        channel: this.channelId,
-        ts: await this.messageTsPromise,
-      })
-    );
+    await this.pQueue.add(async () => {
+      try {
+        this.client.chat.update({
+          ...this.buildMessageContent(),
+          channel: this.channelId,
+          ts: await this.messageTsPromise,
+        });
+      } catch (e) {
+        this.ackFallback(e.message);
+      }
+    });
   }
 
   public async reportInvalidTask(message?: string) {
     this.status = "failure";
     this.title = message || `Invalid task`;
     this.messageText = message || `Invalid task`;
-    this.pQueue.add(() =>
-      this.client.chat
-        .postMessage({ text: this.messageText, channel: this.channelId })
-        .then((result) => result.message.ts)
-    );
+    this.pQueue.add(() => this.ackFallback(this.messageText));
   }
 
   protected async onCreate(title: string, cmdLine: string, link: string) {

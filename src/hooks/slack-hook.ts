@@ -53,12 +53,12 @@ export class SlackHook extends Hook {
       return;
     }
     const keyword = parts[0];
-    await ack();
     this.emit(
       "command",
       { keyword, parameters: { cmdLine: body.text } },
-      new SlackReporter(client, body.channel_id)
+      new SlackReporter(client, body.channel_id, ack)
     );
+    await ack();
   }
 
   override async destroy() {}
