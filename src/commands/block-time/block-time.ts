@@ -45,9 +45,13 @@ export class BlockTimeTask extends Task {
               blockCount > 0 ? `+${blockCount}` : `${blockCount}`
             }) - ${date.format("dddd, MMMM Do YYYY, h:mm:ss a")}`
           );
-          this.emit("progress", (progress += 100 / this.networkApis.length));
+          this.emit(
+            "progress",
+            Math.round((progress += 100 / this.networkApis.length))
+          );
         })
       );
+      return;
     }
 
     const text = parameters.cmdLine.split(" ").slice(1).join(" ");
@@ -75,7 +79,10 @@ export class BlockTimeTask extends Task {
           "dddd, MMMM Do YYYY, h:mm:ss a"
         )}`
       );
-      this.emit("progress", (progress += 100 / this.networkApis.length));
+      this.emit(
+        "progress",
+        Math.round((progress += 100 / this.networkApis.length))
+      );
     });
   }
   async cancel() {
