@@ -48,6 +48,7 @@ export class SlackReporter extends Reporter {
   }
 
   private async postMessage() {
+    debug(`Posting message`);
     this.messageTsPromise = this.pQueue.add(() => {
       try {
         return this.client.chat
@@ -57,20 +58,23 @@ export class SlackReporter extends Reporter {
           })
           .then((result) => result.message.ts);
       } catch (e) {
+        debug(`Error posting message: ${e.message}`);
         this.ackFallback(e.message);
       }
     });
   }
 
   private async updateMessage() {
+    debug(`Updating message`);
     await this.pQueue.add(async () => {
       try {
-        this.client.chat.update({
+        await this.client.chat.update({
           ...this.buildMessageContent(),
           channel: this.channelId,
           ts: await this.messageTsPromise,
         });
       } catch (e) {
+        debug(`Error updating message: ${e.message}`);
         this.ackFallback(e.message);
       }
     });
