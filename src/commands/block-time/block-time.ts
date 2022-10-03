@@ -25,6 +25,7 @@ export class BlockTimeTask extends Task {
     }
 
     if (subcommand == "at") {
+      debug(`Checking time at "${additional.join(" ")}"`);
       const targetDate = moment(additional.join(" "));
       if (targetDate.isBefore(moment())) {
         throw new Error("Cannot (yet) compute past date blocks");
