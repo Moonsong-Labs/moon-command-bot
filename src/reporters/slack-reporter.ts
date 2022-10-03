@@ -97,6 +97,10 @@ export class SlackReporter extends Reporter {
           text: `${emoji} #${this.task.id} - ${this.title}`,
         },
       },
+      {
+        type: "context",
+        elements: [{ text: `${this.cmdLine}`, type: "plain_text" }],
+      },
     ];
 
     if (this.messageBlocks.progress) {
