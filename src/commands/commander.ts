@@ -1,10 +1,12 @@
-import { Service } from "../utils/service";
+import { Service } from "../services/service";
 import { TaskFactory } from "./factory";
 import pQueue from "p-queue";
 import { Task } from "./task";
 
 import Debug from "debug";
 import { Reporter } from "../reporters/reporter";
+import { TaskHistory } from "../services/task-history";
+import { Hook } from "../hooks/hook";
 const debug = Debug("commands:commander");
 
 export interface CommandData {
@@ -30,17 +32,43 @@ export class Commander implements Service {
   // Global counter for tasks
   private taskIndex: number;
 
-  constructor(factories: TaskFactory[]) {
+  constructor(
+    factories: TaskFactory[],
+    hooks: Hook[],
+    historyService?: TaskHistory
+  ) {
     this.taskQueue = new pQueue({ concurrency: 1 });
     this.taskIndex = 0;
     this.isDestroying = false;
-    this.isReady = Promise.all(factories.map((c) => c.isReady)).then(
-      () => this
-    );
+
+    // Store factory by keyword for faster lookup
     this.factories = factories.reduce((p, c) => {
       p[c.keyword] = c;
       return p;
     }, {});
+
+    this.isReady = Promise.all([
+      ...factories.map((factory) => factory.isReady),
+      ...hooks.map((hook) => hook.isReady),
+      historyService ? historyService.isReady : Promise.resolve(),
+    ]).then(() => {
+      // Associate hook with commands
+      for (const hook of hooks) {
+        hook.on("command", (data, reporter: Reporter) => {
+          try {
+            const task = this.handleCommand(data);
+            reporter.attachTask(task);
+            if (historyService) {
+              historyService.recordTask(task);
+            }
+          } catch (e) {
+            reporter.reportInvalidTask(e.message);
+            console.error(`[Commander] Error: ${e.message}`);
+          }
+        });
+      }
+      return this;
+    });
   }
 
   public handleCommand({ keyword, parameters }: CommandData): Task {

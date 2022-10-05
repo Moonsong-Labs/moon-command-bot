@@ -2,11 +2,11 @@ import { Reporter } from "./reporter";
 import Debug from "debug";
 import PQueue from "p-queue";
 import { TaskLogLevel } from "../commands/task";
-import { OctokitService } from "../utils/github";
+import { GithubService } from "../services/github";
 const debug = Debug("reporters:github");
 
 export class GithubReporter extends Reporter {
-  private octoRepo: OctokitService;
+  private octoRepo: GithubService;
   private issueNumber: number;
 
   private commentIdPromise: Promise<number>;
@@ -18,7 +18,7 @@ export class GithubReporter extends Reporter {
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
 
-  constructor(octokit: OctokitService, issueNumber: number) {
+  constructor(octokit: GithubService, issueNumber: number) {
     super();
     this.pQueue = new PQueue({ concurrency: 1 });
     this.octoRepo = octokit;

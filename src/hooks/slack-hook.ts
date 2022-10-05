@@ -12,30 +12,27 @@ import Debug from "debug";
 import { SlackReporter } from "../reporters/slack-reporter";
 const debug = Debug("hooks:slack");
 
-interface SlackHookOptions {
-  appToken: string;
-  token: string;
-  signingSecret: string;
-  express: Express;
+export interface SlackHookConfig {
+  urlPrefix: string;
+  auth: {
+    appToken: string;
+    token: string;
+    signingSecret: string;
+  };
 }
 
 export class SlackHook extends Hook {
   private app: App;
   private receiver: Receiver;
 
-  constructor({ appToken, token, signingSecret, express }: SlackHookOptions) {
+  constructor(config: SlackHookConfig, express: Express) {
     super();
     this.receiver = new ExpressReceiver({
-      signingSecret,
+      signingSecret: config.auth.signingSecret,
       app: express,
-      endpoints: "/slack",
+      endpoints: config.urlPrefix,
     });
-    this.app = new App({
-      receiver: this.receiver,
-      appToken,
-      token,
-      signingSecret,
-    });
+    this.app = new App({ receiver: this.receiver, ...config.auth });
     this.app.command("/moonbot", ({ client, body, ack }) => {
       debug(`Received command moonbot: ${body.text}`);
       return this.handleCommand(body, client, ack);

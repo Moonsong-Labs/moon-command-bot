@@ -1,42 +1,67 @@
 {
   "name": "moon-command-bot",
   "version": "0.0.1",
+  "private": true,
   "description": "Bot to handle command for Moonbeam",
   "author": "Crystalin <alan@purestake.com>",
   "license": "ISC",
   "repository": "https://github.com/PureStake/moon-command-bot",
   "homepage": "https://github.com/PureStake/moon-command-bot",
   "bugs": "https://github.com/PureStake/moon-command-bot/issues",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "src/index.ts",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "nodemon --exec \"npm start\"",
-    "build": "tsc",
+    "build": "rollup -c",
     "start": "ts-node src/server.ts",
     "prettier": "prettier '{*,**/*}.{ts,js,json,yaml,html}'",
-    "format": "npx run prettier --write",
-    "lint": "npx run prettier --check"
+    "format": "npm run prettier --write",
+    "lint": "npm run prettier --check",
+    "publish": "npm run build && npm publish"
   },
   "dependencies": {
     "@octokit/auth-app": "^3.5.3",
     "@octokit/webhooks": "^9.17.0",
     "@slack/bolt": "^3.12.1",
     "@twilio/replay-event-emitter": "^0.3.1",
+    "chalk": "^4.1.2",
     "debug": "^4.3.4",
     "express": "^4.18.1",
     "moment": "^2.29.4",
     "moment-parseplus": "^2.0.0",
-    "moonbeam-tools": "^0.0.29",
+    "moonbeam-tools": "^0.0.31",
     "octokit": "^2.0.7",
     "p-queue": "^6.6.2",
     "probot": "^12.2.8",
     "rereadable-stream": "^1.4.14",
-    "typed-emitter": "^2.1.0",
-    "typescript": "^4.7.3"
+    "typed-emitter": "^2.1.0"
   },
   "devDependencies": {
+    "@moonbeam-network/api-augment": "^0.1801.0",
+    "@polkadot/api-augment": "^9.4.3",
+    "@polkadot/dev": "^0.67.135",
+    "@polkadot/x-textencoder": "^10.1.9",
+    "@rollup/plugin-alias": "^3.1.9",
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^14.1.0",
+    "@rollup/plugin-replace": "^4.0.0",
+    "@types/node": "^18.8.2",
     "nodemon": "^2.0.9",
     "prettier": "^2.4.0",
     "prettier-plugin-compactify": "^0.1.4",
-    "ts-node": "^10.9.1"
+    "rollup": "^2.79.1",
+    "rollup-plugin-preserve-shebangs": "^0.2.0",
+    "rollup-plugin-strip": "^1.2.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.4.0",
+    "typescript": "^4.8.4"
   },
   "nodemonConfig": {
     "exec": "npm start",
@@ -45,7 +70,7 @@
       "."
     ]
   },
-  "jest": {
-    "testEnvironment": "node"
+  "bin": {
+    "moon-command-bot": "./dist/moon-command-bot.cjs"
   }
 }

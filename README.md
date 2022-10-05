@@ -2,56 +2,88 @@
 
 Bot to handle commands for github/slack/...
 
+# Installation
+
+```
+sudo npm install -g @moonbeam-network/moon-bot
+```
+
+## Using source
+
+```
+git clone https://github.com/purestake/moon-command-bot
+```
+
 # How to use
 
-The bot runs commands in response to:
-* pull request comments
-* slack commands
-The form is:
+## Starting the bot
 
-`/<command> [action] [...args]`
+```
+moon-bot
+```
 
-[Environment variables](#configuration) and
-[Github settings](#required-github-settings) have to properly configured
-upfront for this interaction to work.
+## Using the source
+
+```
+npm run start
+```
+
+## Hooks
+
+The bot is able to receive commands from different sources:
+
+### Github
+
+Through `/<command> <...args>` from comments in github issues and pull_request. The bot will reply by creating a new comment.
+
+It requires to configure the github hook with webhook information. (TODO: Add instructions)
+
+### Slack
+
+Through `/<bot_name> <command> <...args>` in channels having the bot as a member.
+
+It requires setting up a bot in slack (TODO: Add instructions)
+
+### HTTP API
+
+Through the url provided by the bot, it is possible to also trigger commands:
+
+Ex: http://localhost:8000/api/sample
+
+(Support for JSON format will come soon)
+
+## Commands
+
+There are multiple commands in the [commands](src/commands) folder.
+Each one has its dedicated folder and can be enabled through the config.
+
+Here are some of them:
+
+- Sample: Triggers a timer of X (default: 10) seconds (for testing purposes)
+- Benchmark: Triggers build and benchmark of moonbeam binary (requires a dedicated/powerful hardware)
+- block-time: Returns the expected/past block number at a given time and vice et versa.
 
 # Configuration
 
-Create a `.env` file in the root with the following:
+The bot is flexible and allows to choose which `hook` and `command` to use.
+There are currently 3 pre-defined configuration:
+[Production](src/configs/production.ts): Enable all the hooks/commands. It requires environment variables
+[Local](src/configs/local.ts): Enable all commands but only the API HTTP hook. It requires environment variables
+[Dev](src/configs/dev.ts): Only enable commands without external effect. Doesn't require environment variables
 
+You can specify the predefined configuration using the `BOT_ENV` environment variable. Ex:
+
+```bash
+BOT_ENV=production npm run start
 ```
-SERVICE_URL=<url used for sending link to tasks>
 
-BENCHMARK_COMMAND=true
-MOONBEAM_PRIVATE_PEM=
-MOONBEAM_REPO_OWNER=
-MOONBEAM_REPO_NAME=
-MOONBEAM_INSTALLATION_ID=
-MOONBEAM_APP_ID=
-MOONBEAM_CLIENT_ID=
-MOONBEAM_CLIENT_SECRET=
-FORK_PRIVATE_PEM=
-FORK_REPO_OWNER=
-FORK_REPO_NAME=
-FORK_INSTALLATION_ID=
-FORK_APP_ID=
-FORK_CLIENT_ID=
-FORK_CLIENT_SECRET=
+## Custom configuration
 
-SLACK_HOOK=true
-SLACK_APP_TOKEN=
-SLACK_SIGNING_SECRET=
-SLACK_BOT_TOKEN=
+It is possible to make your own configuration:
 
-GITHUB_HOOK=true
-GITHUB_PRIVATE_PEM=
-GITHUB_REPO_OWNER=
-GITHUB_REPO_NAME=
-GITHUB_INSTALLATION_ID=
-GITHUB_APP_ID=
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
-```
+- Copy the [env-sample.json](./env-sample.json) to your own json file (ex: `my-env.json`)
+- Modify your json file to add/remove hooks/services/
+- Start the service with `BOT_ENV=my-env.json npm run start`
 
 # Linting and formatting
 
@@ -64,16 +96,15 @@ style consistency on this project's code.
 
 `npm && npm start`
 
-
 # Required Github settings
 
 ## Permissions
 
-* Metadata: Read Only
-* Issues: Read/Write
-* Pull Requests: Read/Write
-* Contents: Read/Write
+- Metadata: Read Only
+- Issues: Read/Write
+- Pull Requests: Read/Write
+- Contents: Read/Write
 
 ## Event subscriptions
 
-* Issue comments
+- Issue comments

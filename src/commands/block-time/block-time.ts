@@ -6,17 +6,17 @@ import Debug from "debug";
 import { computeBlockForMoment, getBlockDate } from "../../actions/block-time";
 const debug = Debug("commands:blocktime");
 
-export interface NetworkConfig {
+export interface Network {
   name: string;
   api: ApiPromise;
 }
 export class BlockTimeTask extends Task {
-  private networkApis: NetworkConfig[];
+  private networkApis: Network[];
   public readonly name: string;
   private cancelled: boolean;
   private namePadding: number;
 
-  constructor(keyword: string, id: number, networkApis: NetworkConfig[]) {
+  constructor(keyword: string, id: number, networkApis: Network[]) {
     super(keyword, id);
     this.networkApis = networkApis;
     this.cancelled = false;

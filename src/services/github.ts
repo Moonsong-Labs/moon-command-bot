@@ -10,8 +10,15 @@ import { Octokit } from "octokit";
 import moment from "moment";
 import { Service } from "./service";
 
-export class OctokitService implements Service {
-  public isReady: Promise<OctokitService>;
+
+export class GithubServiceConfig {
+  owner: string;
+  repo: string;
+  installationId: number | string;
+  auth: StrategyOptions;
+}
+export class GithubService implements Service {
+  public isReady: Promise<GithubService>;
   private installationId: string | number;
   public repo: string;
   public owner: string;
@@ -19,16 +26,27 @@ export class OctokitService implements Service {
   private jwt: InstallationAccessTokenAuthentication;
   private octokit: Octokit;
 
-  constructor(
-    owner: string,
-    repo: string,
-    installationId: number | string,
-    options: StrategyOptions
-  ) {
-    this.owner = owner;
-    this.repo = repo;
-    this.installationId = installationId;
-    this.app = createAppAuth(options);
+  constructor(config: GithubServiceConfig) {
+    if (!config.owner) {
+      throw new Error("Missing github owner");
+    }
+    if (!config.repo) {
+      throw new Error("Missing github repo");
+    }
+    if (!config.installationId) {
+      throw new Error(
+        `Missing github installationId for ${config.owner}/${config.repo}`
+      );
+    }
+    if (!config.auth) {
+      throw new Error(
+        `Missing github app config for ${config.owner}/${config.repo}`
+      );
+    }
+    this.owner = config.owner;
+    this.repo = config.repo;
+    this.installationId = config.installationId;
+    this.app = createAppAuth(config.auth);
     this.isReady = this.checkAuth().then(() => this);
   }
 

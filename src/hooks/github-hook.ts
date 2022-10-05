@@ -1,51 +1,48 @@
 import { createNodeMiddleware, Probot } from "probot";
-import { Webhooks } from "@octokit/webhooks";
 import { Express } from "express";
 
 import { Hook } from "./hook";
 import Debug from "debug";
-import { OctokitService } from "../utils/github";
+import { GithubService, GithubServiceConfig } from "../services/github";
 import { IssueCommentEvent } from "@octokit/webhooks-types";
-import { Octokit } from "octokit";
 import { GithubReporter } from "../reporters/github-reporter";
 const debug = Debug("hooks:github");
 
-interface GithubHookOptions {
+interface ProbotConfig {
   privateKey: string;
   appId: string;
   webhookSecret: string;
-  express: Express;
+}
+export interface GithubHookConfig {
+  // Url prefix to listen to (ex: /github/moonbeam)
+  urlPrefix: string;
+  // Configuration for Probot
+  probot: ProbotConfig;
   // List of repos currently allowed
-  octoRepos: OctokitService[];
+  repo: GithubServiceConfig;
 }
 
 export class GithubHook extends Hook {
-  private octoRepos: OctokitService[];
+  private readonly repo: GithubService;
+  private readonly probot: Probot;
+  public readonly isReady: Promise<GithubHook>;
 
-  constructor({
-    privateKey,
-    webhookSecret,
-    appId,
-    express,
-    octoRepos,
-  }: GithubHookOptions) {
+  constructor(config: GithubHookConfig, express: Express) {
     super();
-    this.octoRepos = octoRepos;
-    const probot = new Probot({
-      appId,
-      privateKey: privateKey,
-      secret: webhookSecret,
-    });
+    this.repo = new GithubService(config.repo);
+    this.probot = new Probot(config.probot);
 
     const middleware = createNodeMiddleware(
       (app) => {
-        app.on(`issue_comment`, async ({ octokit, payload, issue }) => {
+        app.on(`issue_comment`, async ({ payload, issue }) => {
           this.onWebhook(issue, payload);
         });
       },
-      { probot }
+      { probot: this.probot }
     );
-    express.use("/github", middleware);
+    express.use(config.urlPrefix, middleware);
+
+    this.isReady = this.repo.isReady.then(() => this);
   }
 
   async onWebhook(reply: ({ body }) => void, payload: IssueCommentEvent) {
@@ -63,13 +60,10 @@ export class GithubHook extends Hook {
     const cmdLine = parts.join(" ");
     debug(`Running cmd: ${cmdLine}`);
 
-    const octoRepo = this.octoRepos.find(
-      ({ owner, repo }) =>
-        `${owner}/${repo}`.toLocaleLowerCase() ==
-        payload.repository.full_name.toLocaleLowerCase()
-    );
-
-    if (!octoRepo) {
+    if (
+      `${this.repo.owner}/${this.repo.repo}`.toLocaleLowerCase() !==
+      payload.repository.full_name.toLocaleLowerCase()
+    ) {
       reply({ body: "Repository not supported by the bot" });
       return;
     }
@@ -77,9 +71,12 @@ export class GithubHook extends Hook {
     this.emit(
       "command",
       { keyword: parts[0], parameters: { cmdLine } },
-      new GithubReporter(octoRepo, payload.issue.number)
+      new GithubReporter(this.repo, payload.issue.number)
     );
   }
 
-  override async destroy() {}
+  override async destroy() {
+    await this.isReady;
+    await this.repo.destroy();
+  }
 }

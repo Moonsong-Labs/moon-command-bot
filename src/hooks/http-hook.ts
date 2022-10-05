@@ -5,22 +5,22 @@ import Debug from "debug";
 import { HTMLStreamer } from "../reporters/html-streamer";
 const debug = Debug("hooks:http");
 
-interface HttpHookOptions {
-  express: Express;
+export interface HttpHookConfig {
+  urlPrefix: string;
 }
 
 export class HttpHook extends Hook {
-  constructor({ express }: HttpHookOptions) {
+  constructor(config: HttpHookConfig, express: Express) {
     super();
     this.isReady = new Promise<HttpHook>((resolve) => {
-      express.get("/rest/*", (req, res) => {
-        this._handleRequest(req, res);
+      express.get(`${config.urlPrefix}/*`, (req, res) => {
+        this.handleRequest(req, res);
       });
       resolve(this);
     });
   }
 
-  private _handleRequest = (req: Request, res: Response) => {
+  private handleRequest = (req: Request, res: Response) => {
     try {
       const parameters = req.originalUrl.slice(1).split(/\//);
       if (parameters.length < 2) {
@@ -30,18 +30,6 @@ export class HttpHook extends Hook {
       const keyword = parameters[1].toLocaleLowerCase();
       const cmdLine = parameters.join(" ");
       debug(`Received keyword: ${keyword}, cmdLine:${cmdLine}`);
-
-      if (keyword == "tasks") {
-        if (parameters.length < 3) {
-          throw new Error("Not enough arguments");
-        }
-        // special case (TODO: Handle separately)
-        const taskId = parseInt(parameters[2]);
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.setHeader("Transfer-Encoding", "chunked");
-        this.emit("history", taskId, res);
-        return;
-      }
 
       // Prepare headers for streamed html
       res.setHeader("Content-Type", "text/html; charset=utf-8");

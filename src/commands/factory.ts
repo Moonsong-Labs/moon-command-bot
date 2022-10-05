@@ -1,4 +1,4 @@
-import type { Service } from "../utils/service";
+import type { Service } from "../services/service";
 import { Task } from "./task";
 
 export abstract class TaskFactory implements Service {

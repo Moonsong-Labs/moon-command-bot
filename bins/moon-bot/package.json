@@ -1,0 +1,17 @@
+{
+  "name": "@moonbeam-network/moon-bot",
+  "version": "0.0.2",
+  "description": "Bot to handle command for Moonbeam Development",
+  "author": "Crystalin <alan@purestake.com>",
+  "license": "ISC",
+  "repository": "https://github.com/PureStake/moon-command-bot",
+  "homepage": "https://github.com/PureStake/moon-command-bot",
+  "bugs": "https://github.com/PureStake/moon-command-bot/issues",
+  "main": "moon-bot.cjs",
+  "scripts": {
+    "start": "./moon-bot.cjs"
+  },
+  "bin": {
+    "moon-bot": "./moon-bot.cjs"
+  }
+}

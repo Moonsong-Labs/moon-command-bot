@@ -1,0 +1,45 @@
+{
+  "commands": {
+    "sample": {
+      "seconds": 10
+    },
+    "benchmark": null,
+    "block-time": {
+      "networks": [
+        {
+          "network": "alphanet"
+        },
+        {
+          "network": "moonriver"
+        },
+        {
+          "network": "moonbeam"
+        }
+      ]
+    }
+  },
+  "history": {
+    "limit": 1000,
+    "urlPrefix": "/history/test/tasks"
+  },
+  "hooks": {
+    "http": {
+      "urlPrefix": "/api"
+    },
+    "slack": {
+      "urlPrefix": "/slack",
+      "auth": {
+        "appToken": "xapp-1-...........-.............-................................................................",
+        "token": "431.............................",
+        "signingSecret": "your...own...signing...secret"
+      }
+    }
+  },
+  "server": {
+    "url": "http://localhost:8000",
+    "listener": {
+      "port": 8000,
+      "hostname": "0.0.0.0"
+    }
+  }
+}

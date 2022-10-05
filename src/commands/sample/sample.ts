@@ -6,20 +6,22 @@ const debug = Debug("commands:sample");
 export class SampleTask extends Task {
   public isReady: Promise<SampleTask>;
   public readonly name: string;
+  private readonly time: number;
   private cancelled: boolean;
 
-  constructor(keyword: string, id: number) {
+  constructor(keyword: string, id: number, time: number) {
     super(keyword, id);
-    this.name = `A simple task with 10s timer`;
+    this.time = time;
+    this.name = `A simple task with ${time}s timer`;
   }
 
   public async execute(_: { [name: string]: string }) {
-    for (const i of new Array(10).fill(0).map((_, i) => i)) {
+    for (const i of new Array(this.time).fill(0).map((_, i) => i)) {
       if (this.cancelled) {
         return;
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      this.emit("progress", 10 * i, `Timer ${i}`);
+      this.emit("progress", (100 * i) / this.time, `Timer ${i}`);
       this.emit("log", "debug", `Moving to timer ${i}`);
     }
     this.emit("progress", 100, `Success`);

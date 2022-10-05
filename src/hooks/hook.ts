@@ -3,11 +3,10 @@ import type TypedEmitter from "typed-emitter";
 import { Writable } from "node:stream";
 import type { CommandData } from "../commands/commander";
 import { Reporter } from "../reporters/reporter";
-import { Service } from "../utils/service";
+import { Service } from "../services/service";
 
 export type HookEvents = {
   command: (data: CommandData, reporter: Reporter) => void;
-  history: (taskId: number, stream: Writable) => void;
 };
 
 export abstract class Hook

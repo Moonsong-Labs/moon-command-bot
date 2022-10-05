@@ -1,21 +1,35 @@
+import { BenchmarkRepos } from "../../actions/benchmark";
+import { GithubService, GithubServiceConfig } from "../../services/github";
 import { TaskFactory } from "../factory";
-import { BenchmarkConfig, BenchmarkTask } from "./benchmark";
+import { BenchmarkTask } from "./benchmark";
 
+export class BenchmarkFactoryConfig {
+  repos: {
+    main: GithubServiceConfig;
+    fork: GithubServiceConfig;
+  };
+}
 export class BenchmarkFactory extends TaskFactory {
-  private config: BenchmarkConfig;
+  private repos: BenchmarkRepos;
+  public isReady: Promise<BenchmarkFactory>;
 
-  constructor(keyword: string, config: BenchmarkConfig) {
+  constructor(keyword: string, config: BenchmarkFactoryConfig) {
     super(keyword);
-    this.config = { ...config };
-    this.isReady = Promise.all([
-      this.config.moonbeamRepo.isReady,
-      this.config.forkRepo.isReady,
-    ]).then(() => this);
+    this.repos = {
+      main: new GithubService(config.repos.main),
+      fork: new GithubService(config.repos.fork),
+    };
+    this.isReady = Promise.all(
+      Object.values(this.repos).map((repo) => repo.isReady)
+    ).then(() => this);
   }
 
   public createTask(id: number) {
-    return new BenchmarkTask(this.keyword, id, this.config);
+    return new BenchmarkTask(this.keyword, id, this.repos);
   }
 
-  destroy() {}
+  override async destroy() {
+    await this.isReady;
+    await Promise.all(Object.values(this.repos).map((repo) => repo.destroy()));
+  }
 }

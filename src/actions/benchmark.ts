@@ -1,6 +1,6 @@
 import * as path from "path";
 import * as fs from "fs/promises";
-import { OctokitService } from "../utils/github";
+import { GithubService } from "../services/github";
 import { runTask } from "./runner";
 import { addRemote, cloneMoonbeam, createBranch, setupBranch } from "./github";
 import Debug from "debug";
@@ -8,68 +8,39 @@ const debug = Debug("actions:benchmark");
 
 const cwd = process.cwd();
 
-//::node::import::native::sr25519::transfer_keep_alive::paritydb::small
-
 // const cargoRun = "cargo run --features=runtime-benchmarks --bin moonbeam -- ";
 const cargoRun = "cargo run ";
-
-interface BenchRunConfig {
-  // Branch to run the benchmark against
-  branch: string;
-
-  // Access to repos
-  moonbeamRepo: OctokitService;
-  forkRepo: OctokitService;
-
-  // Parameters benchmark command (ex: "pallet author-mapping")
-  commandParams: string;
-}
-
-// Subcommand executed
-type Command = "runtime";
-type SubCommand = "storage" | "pallet" | "block" | "overhead";
 
 const ORIGINAL_REMOTE_NAME = "original";
 const FORK_REMOTE_NAME = "fork";
 
-async function prepareForkRepo({
-  moonbeamRepo,
-  forkRepo,
-  branch,
-}: BenchRunConfig) {
-  const gitDirectory = path.join(cwd, "git");
-  const moonbeamUrl = await moonbeamRepo.getAuthorizedUrl();
-  const benchUrl = await forkRepo.getAuthorizedUrl();
-  const forkBranch = `${branch}-benchbot-job-${new Date().getTime()}`;
-  const repoDirectory = await cloneMoonbeam(
-    moonbeamUrl,
-    moonbeamRepo.owner,
-    moonbeamRepo.repo,
-    gitDirectory
-  );
-  await addRemote(
-    repoDirectory,
-    ORIGINAL_REMOTE_NAME,
-    moonbeamUrl,
-    moonbeamRepo.owner,
-    moonbeamRepo.repo
-  );
-  await addRemote(
-    repoDirectory,
-    FORK_REMOTE_NAME,
-    benchUrl,
-    forkRepo.owner,
-    forkRepo.repo
-  );
-  await setupBranch(repoDirectory, ORIGINAL_REMOTE_NAME, branch);
-  await createBranch(repoDirectory, forkBranch);
-  return { repoDirectory, forkBranch: forkBranch };
+export interface BenchmarkRepos {
+  main: GithubService;
+  fork: GithubService;
 }
 
-var SubcommandConfigs = {
+export interface PalletCommand {
+  type: "pallet";
+  palletName:
+    | "crowdloan-rewards"
+    | "parachain-staking"
+    | "author-mapping"
+    | "asset-manager";
+}
+
+export type Command = PalletCommand;
+
+type CommandRunConfig = {
+  [key in PalletCommand["type"]]: {
+    title: string;
+    cmd: string;
+  };
+};
+
+var commandRunConfigs: CommandRunConfig = {
   pallet: {
     title: "Runtime Pallet",
-    benchCommand: [
+    cmd: [
       cargoRun,
       "--release",
       "--bin moonbeam",
@@ -91,6 +62,45 @@ var SubcommandConfigs = {
     ].join(" "),
   },
 };
+
+export interface BenchRunConfig {
+  // Branch to run the benchmark against
+  branch: string;
+  // Repos (main & fork)
+  repos: BenchmarkRepos;
+  // Parameters benchmark command (ex: "pallet author-mapping")
+  command: Command;
+}
+
+async function prepareForkRepo({ repos, branch }: BenchRunConfig) {
+  const gitDirectory = path.join(cwd, "git");
+  const moonbeamUrl = await repos.main.getAuthorizedUrl();
+  const benchUrl = await repos.fork.getAuthorizedUrl();
+  const forkBranch = `${branch}-benchbot-job-${new Date().getTime()}`;
+  const repoDirectory = await cloneMoonbeam(
+    moonbeamUrl,
+    repos.main.owner,
+    repos.main.repo,
+    gitDirectory
+  );
+  await addRemote(
+    repoDirectory,
+    ORIGINAL_REMOTE_NAME,
+    moonbeamUrl,
+    repos.main.owner,
+    repos.main.repo
+  );
+  await addRemote(
+    repoDirectory,
+    FORK_REMOTE_NAME,
+    benchUrl,
+    repos.fork.owner,
+    repos.fork.repo
+  );
+  await setupBranch(repoDirectory, ORIGINAL_REMOTE_NAME, branch);
+  await createBranch(repoDirectory, forkBranch);
+  return { repoDirectory, forkBranch: forkBranch };
+}
 
 function checkRuntimeBenchmarkCommand(command) {
   let required = [
@@ -157,27 +167,16 @@ function matchMoonbeamPallet(pallet: string) {
 }
 
 export async function benchmarkRuntime(config: BenchRunConfig) {
-  debug("Waiting our turn to run benchmarkRuntime...");
+  debug(`Starting benchmark of ${config.command.type}...`);
 
-  if (config.commandParams.split(" ").length < 2) {
-    throw new Error(`Incomplete command.`);
-  }
-
-  const [subCommand, ...extraWords] = config.commandParams.split(" ");
-  const subCommandExtra = extraWords.join(" ").trim();
-
-  const subCommandConfig = SubcommandConfigs[subCommand];
-  if (!subCommandConfig) {
-    throw new Error(`Unknown subcommand: ${subCommand}`);
-  }
-
-  if (!checkCommandSanity(subCommandExtra)) {
-    throw new Error(`Special characters not allowed`);
+  const runConfig = commandRunConfigs[config.command.type];
+  if (!runConfig) {
+    throw new Error(`Config for ${config.command.type} missing`);
   }
 
   // Complete the command with pallet information
-  const palletInfo = matchMoonbeamPallet(subCommandExtra.split(" ")[0]);
-  const completeBenchCommand = subCommandConfig.benchCommand
+  const palletInfo = matchMoonbeamPallet(config.command.palletName);
+  const completeBenchCommand = runConfig.cmd
     .replace("{pallet_name}", palletInfo.benchmark)
     .replace("{pallet_folder}", palletInfo.dir);
 
@@ -187,7 +186,7 @@ export async function benchmarkRuntime(config: BenchRunConfig) {
   }
 
   debug(
-    `Started ${subCommand} benchmark "${subCommandConfig.title}." (command: ${completeBenchCommand})`
+    `Started ${config.command.type} benchmark "${runConfig.title}." (command: ${completeBenchCommand})`
   );
 
   // Also generates a unique branch
@@ -229,11 +228,11 @@ export async function benchmarkRuntime(config: BenchRunConfig) {
 
     debug(`Creating new pull request`);
     const result = await (
-      await config.forkRepo.getOctokit()
+      await config.repos.fork.getOctokit()
     ).rest.pulls.create(
-      config.moonbeamRepo.extendRepoOwner({
+      config.repos.main.extendRepoOwner({
         title: "Updated Weights",
-        head: `${config.forkRepo.owner}:${forkBranch}`,
+        head: `${config.repos.fork.owner}:${forkBranch}`,
         base: config.branch,
         body: `Weights have been updated`, // TODO
         maintainer_can_modify: false,

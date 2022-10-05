@@ -1,9 +1,13 @@
-import { benchmarkRuntime } from "../../actions/benchmark";
+import {
+  BenchmarkRepos,
+  benchmarkRuntime,
+  BenchRunConfig,
+} from "../../actions/benchmark";
 import {
   COMMENT_MAX_LENGTH,
   COMMENT_TRUNCATED_POSTFIX,
-  OctokitService,
-} from "../../utils/github";
+  GithubService,
+} from "../../services/github";
 
 import { Task } from "../task";
 import { runTask } from "../../actions/runner";
@@ -11,22 +15,15 @@ import { runTask } from "../../actions/runner";
 import Debug from "debug";
 const debug = Debug("commands:benchmark");
 
-export interface BenchmarkConfig {
-  moonbeamRepo: OctokitService;
-  forkRepo: OctokitService;
-}
-
 export class BenchmarkTask extends Task {
   private cancelled: boolean;
-  private moonbeamRepo: OctokitService;
-  private forkRepo: OctokitService;
+  private repos: BenchmarkRepos;
   public readonly name: string;
 
-  constructor(keyword: string, id: number, config: BenchmarkConfig) {
+  constructor(keyword: string, id: number, repos: BenchmarkRepos) {
     super(keyword, id);
     this.cancelled = false;
-    this.moonbeamRepo = config.moonbeamRepo;
-    this.forkRepo = config.forkRepo;
+    this.repos = repos;
     this.name = `Benchmarking runtime`;
   }
 
@@ -48,14 +45,14 @@ export class BenchmarkTask extends Task {
       parameters.issueNumber && parseInt(parameters.issueNumber);
     const [_, ...commandParams] = parameters.cmdLine.split(" ");
 
-    const moonbeamRest = (await this.moonbeamRepo.getOctokit()).rest;
+    const moonbeamRest = (await this.repos.main.getOctokit()).rest;
 
     // TODO: We might think to allow external PR
     // const contributor = pr.data.head.user.login;
     const branch = pull_number
       ? (
           await moonbeamRest.pulls.get(
-            this.moonbeamRepo.extendRepoOwner({ pull_number })
+            this.repos.main.extendRepoOwner({ pull_number })
           )
         ).data.head.ref
       : "master";
@@ -83,10 +80,9 @@ export class BenchmarkTask extends Task {
 
     const config = {
       branch,
-      commandParams: commandParams.join(" "),
-      moonbeamRepo: this.moonbeamRepo,
-      forkRepo: this.forkRepo,
-    };
+      command: { type: "pallet", palletName: "author-mapping" },
+      repos: this.repos,
+    } as BenchRunConfig;
     debug("benchmarkRuntime");
 
     // kick off the build/run process...
