@@ -21,7 +21,7 @@
     "prettier": "prettier '{*,**/*}.{ts,js,json,yaml,html}'",
     "format": "npm run prettier --write",
     "lint": "npm run prettier --check",
-    "publish": "npm run build && npm publish"
+    "publish": "npm run build && cd bins/moon-bot/ && npm publish"
   },
   "dependencies": {
     "@octokit/auth-app": "^3.5.3",
