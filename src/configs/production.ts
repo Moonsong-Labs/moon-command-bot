@@ -63,6 +63,7 @@ const prodConfig: BotConfig = {
     },
     slack: {
       urlPrefix: "/slack",
+      slackCommand: process.env.SLACK_COMMAND || "/moonbot",
       auth: {
         appToken: process.env.SLACK_APP_TOKEN,
         token: process.env.SLACK_BOT_TOKEN,

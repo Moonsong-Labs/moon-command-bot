@@ -14,6 +14,7 @@ const debug = Debug("hooks:slack");
 
 export interface SlackHookConfig {
   urlPrefix: string;
+  slackCommand: string;
   auth: {
     appToken: string;
     token: string;
@@ -33,7 +34,7 @@ export class SlackHook extends Hook {
       endpoints: config.urlPrefix,
     });
     this.app = new App({ receiver: this.receiver, ...config.auth });
-    this.app.command("/moonbot", ({ client, body, ack }) => {
+    this.app.command(config.slackCommand, ({ client, body, ack }) => {
       debug(`Received command moonbot: ${body.text}`);
       return this.handleCommand(body, client, ack);
     });
