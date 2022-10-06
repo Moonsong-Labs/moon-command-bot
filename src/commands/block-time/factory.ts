@@ -1,6 +1,7 @@
 import { TaskFactory } from "../factory";
 import { BlockTimeTask, Network } from "./block-time";
 import { Argv as ApiNetworkConfig, getApiFor } from "moonbeam-tools";
+import { TaskArguments } from "../task";
 export { Argv as ApiNetworkConfig } from "moonbeam-tools";
 
 export interface BlockTimeFactoryConfig {
@@ -23,8 +24,19 @@ export class BlockTimeFactory extends TaskFactory {
     });
   }
 
-  public createTask(id: number) {
-    return new BlockTimeTask(this.keyword, id, this.networkApis);
+  public createTask(id: number, args: TaskArguments) {
+    if (!args.positional || args.positional.length < 1) {
+      throw new Error("not enough parameters");
+    }
+
+    const parameters =
+      args.positional.length == 1 && typeof args.positional[0] == "number"
+        ? { networkApis: this.networkApis, blockNumber: args.positional[0] }
+        : {
+            networkApis: this.networkApis,
+            dateText: args.positional.join(" "),
+          };
+    return new BlockTimeTask(this.keyword, id, parameters);
   }
 
   destroy() {}

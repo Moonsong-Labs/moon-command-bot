@@ -1,7 +1,7 @@
 import { Service } from "../services/service";
 import { TaskFactory } from "./factory";
 import pQueue from "p-queue";
-import { Task } from "./task";
+import { Task, TaskArguments } from "./task";
 
 import Debug from "debug";
 import { Reporter } from "../reporters/reporter";
@@ -11,10 +11,8 @@ const debug = Debug("commands:commander");
 
 export interface CommandData {
   keyword: string;
-  parameters: {
-    cmdLine: string; // command line with the keyword (ex: "benchmark pallet author-mapping" )
-    [name: string]: string; // optional parameters given by the hook
-  };
+  cmdLine: string;
+  args: TaskArguments;
 }
 
 export class Commander implements Service {
@@ -71,7 +69,7 @@ export class Commander implements Service {
     });
   }
 
-  public handleCommand({ keyword, parameters }: CommandData): Task {
+  public handleCommand({ keyword, cmdLine, args }: CommandData): Task {
     if (this.isDestroying) {
       throw new Error("Service ending");
     }
@@ -81,15 +79,14 @@ export class Commander implements Service {
     }
 
     const timings = { created: Date.now(), started: null, ended: null };
-    const task = factory.createTask(this.taskIndex++);
+    const task = factory.createTask(this.taskIndex++, args);
 
     // We delay the execution so we can have reporters listening to events;
     setTimeout(async () => {
       try {
         task.emit(
           "create",
-          task.name,
-          parameters.cmdLine,
+          cmdLine,
           `${process.env.SERVICE_URL}/rest/tasks/${task.id}`
         );
 
@@ -104,10 +101,11 @@ export class Commander implements Service {
             task.emit("start");
             debug(`Starting ${keyword}-${task.id}\n`);
             try {
-              await task.execute(parameters);
+              await task.execute();
               task.emit("success");
             } catch (error) {
               console.log(`Failure running ${keyword}: ${error.message}`);
+              console.log(error);
               task.emit("failure", error.message);
             }
             debug(`Ending ${keyword}-${task.id}\n`);

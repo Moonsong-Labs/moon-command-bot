@@ -29,7 +29,7 @@ export class GithubReporter extends Reporter {
     this.message = "Done";
   }
 
-  public async reportInvalidTask(message?: string) {
+  public reportInvalidTask = async (message?: string) => {
     this.message = message || `Invalid task`;
     this.reply();
   }
@@ -68,42 +68,42 @@ export class GithubReporter extends Reporter {
     );
   }
 
-  protected async onEnd() {
+  protected onEnd = async () => {
     return this.updateReply();
-  }
+  };
 
-  protected async onCreate(title: string, cmdLine: string, link: string) {
-    this.message = `${title}  \n[Report](${link})\n\ncmd: ${cmdLine}`;
+  protected onCreate = async (cmdLine: string, link: string) => {
+    this.message = `${this.task.name}  \n[Report](${link})\n\ncmd: ${cmdLine}`;
     this.reply();
-  }
-  protected async onStart() {
+  };
+  protected onStart = async () => {
     this.message = `${this.message}  \n**Starting**`;
-  }
-  protected async onSuccess(message?: string) {
+  };
+  protected onSuccess = async (message?: string) => {
     this.status = "success";
     this.message = `${this.message}\n\n**Success**${
       message ? `  \n${message}` : ""
     }`;
-  }
-  protected async onFailure(message?: string) {
+  };
+  protected onFailure = async (message?: string) => {
     this.status = "failure";
     this.message = `${this.message}\n\n**Failure**${
       message ? `  \n${message}` : ""
     }`;
-  }
-  protected async onProgress(percent: number, message?: string) {
+  };
+  protected onProgress = async (percent: number, message?: string) => {
     this.message = `${this.message}  \nProcess (${percent}%)${
       message ? ` - ${message}` : ""
     }`;
 
     return this.updateReply();
-  }
-  protected async onLog(level: TaskLogLevel, message: string) {
+  };
+  protected onLog = async (level: TaskLogLevel, message: string) => {
     this.message = `${this.message}  \n${level}: ${message}`;
     this.logs.push(`${level}: ${message}`);
-  }
+  };
 
-  protected async onAttachment(filePath: string) {
+  protected onAttachment = async (filePath: string) => {
     this.attachments.push(filePath);
-  }
+  };
 }

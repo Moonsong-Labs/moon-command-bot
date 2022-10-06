@@ -13,7 +13,7 @@ export type TaskEvents = {
 
   // The following events are controlled by the Commander;
   // When the task is created
-  create: (title: string, cmdLine: string, link: string) => void;
+  create: (cmdLine: string, link: string) => void;
   // When the task started
   start: () => void;
   // When the task is inserted or move in the queue
@@ -27,6 +27,14 @@ export type TaskEvents = {
 };
 
 export class TaskEventEmitter extends (EventEmitter as new () => TypedEmitter<TaskEvents>) {}
+export type TaskEventEmitterType = typeof TaskEventEmitter;
+
+export interface TaskArguments {
+  // The positional arguments given
+  positional: any[];
+  // The optional arguments given
+  options: { [name: string]: any };
+}
 
 export abstract class Task extends TaskEventEmitter {
   public readonly id: number;
@@ -41,7 +49,7 @@ export abstract class Task extends TaskEventEmitter {
 
   // Execute the task. It should throw an error or return when done.
   // Event "start", "success", "failure" and "end" are controlled by the commander;
-  public abstract execute(parameters: { [name: string]: string }): Promise<any>;
+  public abstract execute(): Promise<any>;
 
   // Taks should support to be cancellable to reduce resource usage.
   public abstract cancel();

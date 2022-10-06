@@ -1,5 +1,4 @@
 import { Reporter } from "./reporter";
-import { Writable } from "node:stream";
 import { WebClient, KnownBlock } from "@slack/web-api";
 import Debug from "debug";
 import PQueue from "p-queue";
@@ -77,7 +76,7 @@ export class SlackReporter extends Reporter {
     }
   }
 
-  public async reportInvalidTask(message?: string) {
+  public reportInvalidTask = async (message?: string) => {
     this.status = "failure";
     this.title = message || `Invalid task`;
     this.messageText = message || `Invalid task`;
@@ -86,16 +85,16 @@ export class SlackReporter extends Reporter {
     } catch (e) {
       debug(`Error ack : ${e.message}`);
     }
-  }
+  };
 
-  protected async onCreate(title: string, cmdLine: string, link: string) {
-    this.messageText = `${title}\n${cmdLine}`;
+  protected onCreate = async (cmdLine: string, link: string) => {
+    this.messageText = `${this.task.name}\n${cmdLine}`;
     this.cmdLine = cmdLine;
-    this.title = title;
+    this.title = this.task.name;
     this.link = link;
     this.status = "progress";
     await this.postMessage();
-  }
+  };
 
   private buildMessageContent() {
     const emoji =
@@ -158,8 +157,8 @@ export class SlackReporter extends Reporter {
     return { text: this.messageText, blocks };
   }
 
-  protected async onStart() {}
-  protected async onProgress(percent: number, message?: string) {
+  protected onStart = async () => {};
+  protected onProgress = async (percent: number, message?: string) => {
     this.status = "progress";
     this.messageBlocks.progress = {
       type: "context",
@@ -178,17 +177,17 @@ export class SlackReporter extends Reporter {
       ],
     };
     this.updateMessage();
-  }
+  };
 
-  protected async onLog(level: TaskLogLevel, message: string) {
+  protected onLog = async (level: TaskLogLevel, message: string) => {
     this.logs.push(`${level.toUpperCase()}: ${message}`);
-  }
+  };
 
-  protected async onAttachment(filePath: string) {
+  protected onAttachment = async (filePath: string) => {
     this.attachments.push(filePath);
-  }
+  };
 
-  protected async onSuccess(message?: string) {
+  protected onSuccess = async (message?: string) => {
     this.status = "success";
     this.messageBlocks.progress = {
       type: "context",
@@ -201,8 +200,8 @@ export class SlackReporter extends Reporter {
         },
       ],
     };
-  }
-  protected async onFailure(message?: string) {
+  };
+  protected onFailure = async (message?: string) => {
     this.status = "failure";
     this.messageBlocks.progress = {
       type: "context",
@@ -218,9 +217,9 @@ export class SlackReporter extends Reporter {
     if (message) {
       this.logs.push(`*Failure*: ${message}`);
     }
-  }
+  };
 
-  protected async onEnd() {
+  protected onEnd = async () => {
     this.updateMessage();
-  }
+  };
 }

@@ -4,8 +4,10 @@ const prodConfig: BotConfig = {
   commands: {
     sample: { seconds: 10 },
     benchmark: {
+      gitFolder: `${process.cwd()}/repos`,
       repos: {
         main: {
+          name: "official",
           owner: process.env.MOONBEAM_REPO_OWNER,
           repo: process.env.MOONBEAM_REPO_NAME,
           installationId: process.env.MOONBEAM_INSTALLATION_ID,
@@ -17,6 +19,7 @@ const prodConfig: BotConfig = {
           },
         },
         fork: {
+          name: "fork",
           owner: process.env.FORK_REPO_OWNER,
           repo: process.env.FORK_REPO_NAME,
           installationId: process.env.FORK_INSTALLATION_ID,
@@ -28,13 +31,6 @@ const prodConfig: BotConfig = {
           },
         },
       },
-    },
-    "block-time": {
-      networks: [
-        { network: "alphanet" },
-        { network: "moonriver" },
-        { network: "moonbeam" },
-      ],
     },
   },
   history: { limit: 1000, urlPrefix: "/history/test/tasks" },

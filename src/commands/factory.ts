@@ -1,5 +1,6 @@
 import type { Service } from "../services/service";
-import { Task } from "./task";
+import { Task, TaskArguments } from "./task";
+
 
 export abstract class TaskFactory implements Service {
   public readonly id: number;
@@ -11,7 +12,7 @@ export abstract class TaskFactory implements Service {
     this.isReady = Promise.resolve().then(() => this);
   }
 
-  public abstract createTask(id: number): Task;
+  public abstract createTask(id: number, args: TaskArguments): Task;
 
   abstract destroy();
 }

@@ -1,7 +1,7 @@
 import {
-  BenchmarkRepos,
   benchmarkRuntime,
   BenchRunConfig,
+  Command,
 } from "../../actions/benchmark";
 import {
   COMMENT_MAX_LENGTH,
@@ -15,98 +15,85 @@ import { runTask } from "../../actions/runner";
 import Debug from "debug";
 const debug = Debug("commands:benchmark");
 
+export interface BenchmarkRepos {
+  main: GithubService;
+  fork: GithubService;
+}
+
+export interface BenchmarkParameters {
+  // pull number and branch are exclusives.
+
+  // pullNumber to use the branch from.
+  pullNumber?: string;
+  // branch to run the
+  branch?: string;
+  // type of benchmark (ex: pallet)
+  command: Command;
+  // Repos needed to perform pull request
+  repos: BenchmarkRepos;
+  // Folder where to clone moonbeam
+  gitFolder: string;
+}
+
 export class BenchmarkTask extends Task {
   private cancelled: boolean;
-  private repos: BenchmarkRepos;
-  public readonly name: string;
 
-  constructor(keyword: string, id: number, repos: BenchmarkRepos) {
+  public readonly name: string;
+  private readonly parameters: BenchmarkParameters;
+
+  constructor(keyword: string, id: number, parameters: BenchmarkParameters) {
     super(keyword, id);
     this.cancelled = false;
-    this.repos = repos;
-    this.name = `Benchmarking runtime`;
+    this.parameters = parameters;
+    this.name = `Benchmarking runtime ${
+      this.parameters.pullNumber
+        ? `PR #${this.parameters.pullNumber}`
+        : `branch ${this.parameters.branch}`
+    }`;
   }
 
-  public async execute(parameters: { [name: string]: string }) {
-    debug(`Executing: ${parameters.cmdLine}`);
-    // try {
-    // if (!parameters.pull_number) {
-    //   logger.end(`Missing parameter pull_number`);
-    //   return;
-    // }
-    // if (!parameters.issue_number) {
-    //   logger.end(`Missing parameter issue_number`);
-    //   return;
-    // }
+  public async execute() {
+    debug(`Executing ${this.name}`);
 
-    const pull_number: number | undefined =
-      parameters.pullNumber && parseInt(parameters.pullNumber);
-    const issue_number: number | undefined =
-      parameters.issueNumber && parseInt(parameters.issueNumber);
-    const [_, ...commandParams] = parameters.cmdLine.split(" ");
-
-    const moonbeamRest = (await this.repos.main.getOctokit()).rest;
+    if (this.parameters.branch && this.parameters.pullNumber) {
+      throw new Error("Cannot support both pullNumber and branch");
+    }
+    const { repos, gitFolder, command } = this.parameters;
 
     // TODO: We might think to allow external PR
     // const contributor = pr.data.head.user.login;
-    const branch = pull_number
+    const branch = this.parameters.pullNumber
       ? (
-          await moonbeamRest.pulls.get(
-            this.repos.main.extendRepoOwner({ pull_number })
+          await repos.main.getPullRequestData(
+            parseInt(this.parameters.pullNumber)
           )
-        ).data.head.ref
+        ).head.ref
       : "master";
 
     debug(`Running benchmark from ${branch}`);
 
     // try {
-    this.emit("progress", 5, `Starting benchmark for branch: ${branch}`);
+    this.emit("progress", 5, `Preparing branch ${branch}`);
+    const repoDirectory = await repos.main.clone(gitFolder);
+    await repos.main.checkoutBranch(repoDirectory, branch);
 
-    // const initialInfo =
-    //   `Starting benchmark for branch: ${branch}\n` +
-    //   `Comment will be updated.\n`;
-    // debug(initialInfo);
-
-    // const issueComment =
-    //   issue_number &&
-    //   this.moonbeamRepo.extendRepoOwner({
-    //     body: initialInfo,
-    //     issue_number,
-    //   });
-    // const issue_comment =
-    //   issueComment &&
-    //   (await moonbeamRest.issues.createComment(issueComment));
-    // const comment_id = issue_comment && issue_comment.data.id;
-
-    const config = {
-      branch,
-      command: { type: "pallet", palletName: "author-mapping" },
-      repos: this.repos,
-    } as BenchRunConfig;
-    debug("benchmarkRuntime");
-
-    // kick off the build/run process...
-    const { outputFile, pullNumber, logs, benchCommand, repoDirectory } =
-      await benchmarkRuntime(config);
-
+    const config: BenchRunConfig = { repoDirectory, branch, command };
+    this.emit("progress", 10, `Running benchmark (~10min)`);
+    const { outputFile, logs, benchCommand } = await benchmarkRuntime(config);
+    // const { outputFile, logs, benchCommand } = {
+    //   outputFile: "./pallets/author-mapping/src/weights.rs",
+    //   logs: "none",
+    //   benchCommand: "cargo run benchmark stuff",
+    // };
     this.emit("log", "debug", `Executed: ${benchCommand}`);
     this.emit("log", "info", logs);
-    this.emit("progress", 95, `Checking rustup`);
+    this.emit("progress", 70, `Checking rustup`);
 
     const toolchain = (
       await runTask("rustup show active-toolchain --verbose", {
         cwd: repoDirectory,
       })
     ).trim();
-
-    // if (comment_id) {
-    //   await moonbeamRest.issues.updateComment(
-    //     this.moonbeamRepo.extendRepoOwner({
-    //       comment_id,
-    //       body: `Error running benchmark: **${branch}**\n\n<details><summary>stdout</summary>${logs}</details>`,
-    //     })
-    //   );
-    // }
 
     const bodyPrefix = `
   Benchmark for branch "${branch}" with command ${benchCommand}
@@ -143,28 +130,28 @@ export class BenchmarkTask extends Task {
   ${bodySuffix}
   `.trim();
 
+    this.emit("progress", 80, `Creating fork branch`);
+
+    const forkBranch = `benchbot-${new Date().getTime()}-task-${this.id}`;
+    await repos.fork.addAsRemote(repoDirectory);
+    await repos.fork.createBranch(repoDirectory, forkBranch);
+    await repos.fork.commitAndPush(
+      repoDirectory,
+      forkBranch,
+      [outputFile],
+      `Updates ${config.command.type} ${config.command.palletName} weights`
+    );
+
+    this.emit("progress", 90, `Creating pull request`);
+    const { number, url } = await repos.main.createPullRequest(
+      branch,
+      forkBranch,
+      `Task #${this.id}: ${config.command.type} ${config.command.palletName} weights`,
+      body
+    );
+
     this.emit("attachment", outputFile);
-    this.emit("log", "info", body);
-    // if (comment_id) {
-    //   await moonbeamRest.issues.updateComment(
-    //     this.moonbeamRepo.extendRepoOwner({ comment_id, body })
-    //   );
-    // }
-    // } catch (e) {
-    //   console.log(e);
-    //   if (issue_number) {
-    //     await moonbeamRest.issues.createComment(
-    //       this.moonbeamRepo.extendRepoOwner({
-    //         issue_number,
-    //         body: `ERROR: Failed to execute benchmark: ${e.message}`,
-    //       })
-    //     );
-    //   }
-    // }
-    // } catch (e) {
-    //   console.log(e);
-    // }
-    debug(`Done benchmarking`);
+    this.emit("log", "info", `Pull request #${number} generated: ${url}`);
   }
 
   cancel() {

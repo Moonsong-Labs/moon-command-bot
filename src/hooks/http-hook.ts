@@ -1,8 +1,8 @@
-import express, { Express, Request, Response } from "express";
-import { Server } from "http";
+import { Express, Request, Response } from "express";
 import { Hook } from "./hook";
 import Debug from "debug";
 import { HTMLStreamer } from "../reporters/html-streamer";
+import { TaskArguments } from "../commands/task";
 const debug = Debug("hooks:http");
 
 export interface HttpHookConfig {
@@ -10,8 +10,11 @@ export interface HttpHookConfig {
 }
 
 export class HttpHook extends Hook {
+  private readonly config: HttpHookConfig;
+
   constructor(config: HttpHookConfig, express: Express) {
     super();
+    this.config = config;
     this.isReady = new Promise<HttpHook>((resolve) => {
       express.get(`${config.urlPrefix}/*`, (req, res) => {
         this.handleRequest(req, res);
@@ -22,23 +25,28 @@ export class HttpHook extends Hook {
 
   private handleRequest = (req: Request, res: Response) => {
     try {
-      const parameters = req.originalUrl.slice(1).split(/\//);
-      if (parameters.length < 2) {
+      const parameters = req.originalUrl
+        .slice(`${this.config.urlPrefix}/`.length)
+        .split(/\//);
+      if (parameters.length < 1) {
         res.end("Error: Missing keyword");
         return;
       }
-      const keyword = parameters[1].toLocaleLowerCase();
-      const cmdLine = parameters.join(" ");
-      debug(`Received keyword: ${keyword}, cmdLine:${cmdLine}`);
+      const keyword = parameters[0].toLocaleLowerCase();
+
+      const args = {
+        options: req.query,
+        positional: parameters.slice(1),
+      } as TaskArguments;
+
+      const cmdLine = req.url;
+
+      debug(`Received keyword: ${keyword} [${parameters.join(" ")}]`);
 
       // Prepare headers for streamed html
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       res.setHeader("Transfer-Encoding", "chunked");
-      this.emit(
-        "command",
-        { keyword, parameters: { cmdLine } },
-        new HTMLStreamer(res)
-      );
+      this.emit("command", { keyword, cmdLine, args }, new HTMLStreamer(res));
     } catch (e) {
       console.error(`Error: ${e.message}`);
       res.end(`Error: ${e.message}`);

@@ -7,48 +7,48 @@ export abstract class Reporter {
 
   public async attachTask(task: Task) {
     this.task = task;
-    this.task.on("create", this.onCreate.bind(this));
-    this.task.on("queue", this.onQueue.bind(this));
-    this.task.on("progress", this.onProgress.bind(this));
-    this.task.on("log", this.onLog.bind(this));
-    this.task.on("failure", this.onFailure.bind(this));
-    this.task.on("success", this.onSuccess.bind(this));
-    this.task.on("attachment", this.onAttachment.bind(this));
-    this.task.on("start", this.onStart.bind(this));
-    this.task.on("end", this.onEnd.bind(this));
+    this.task.on("create", this.onCreate);
+    this.task.on("queue", this.onQueue);
+    this.task.on("progress", this.onProgress);
+    this.task.on("log", this.onLog);
+    this.task.on("failure", this.onFailure);
+    this.task.on("success", this.onSuccess);
+    this.task.on("attachment", this.onAttachment);
+    this.task.on("start", this.onStart);
+    this.task.on("end", this.onEnd);
   }
 
-  public abstract reportInvalidTask(message?: string);
+  public abstract reportInvalidTask: (message?: string) => Promise<void>;
 
-  protected async onCreate(title: string, cmdLine: string, link: string) {
-    debug(`  - [${this.task.keyword}-${this.task.id}] Created: ${cmdLine} | ${link}`);
-  }
-  protected async onQueue(position: number) {
+  protected onCreate = async (cmdLine: string, link: string) => {
+    debug(`  - [${this.task.keyword}-${this.task.id}] Created: ${link}`);
+  };
+  protected onQueue = async (position: number) => {
     debug(`  - [${this.task.keyword}-${this.task.id}] Queued: ${position}`);
-  }
-  protected async onLog(level: TaskLogLevel, message: string) {
+  };
+  protected onLog = async (level: TaskLogLevel, message: string) => {
     debug(`  - [${this.task.keyword}-${this.task.id}] ${level}: ${message}`);
-  }
-  protected async onProgress(percent: number, message?: string) {
+  };
+  protected onProgress = async (percent: number, message?: string) => {
     debug(
       `  - [${this.task.keyword}-${this.task.id}] Progress: ${percent} ${
         message ? message : ""
       }`
     );
-  }
-  protected async onFailure(message: string) {
+  };
+  protected onFailure = async (message: string) => {
     debug(`  - [${this.task.keyword}-${this.task.id}] Failure: ${message}`);
-  }
-  protected async onSuccess(message?: string) {
+  };
+  protected onSuccess = async (message?: string) => {
     debug(`  - [${this.task.keyword}-${this.task.id}] Success: ${message}`);
-  }
-  protected async onAttachment(filePath: string) {
+  };
+  protected onAttachment = async (filePath: string) => {
     debug(`  - [${this.task.keyword}-${this.task.id}] Attachment: ${filePath}`);
-  }
-  protected async onStart() {
+  };
+  protected onStart = async () => {
     debug(`  - [${this.task.keyword}-${this.task.id}] Start`);
-  }
-  protected async onEnd() {
+  };
+  protected onEnd = async () => {
     debug(`  - [${this.task.keyword}-${this.task.id}] End`);
-  }
+  };
 }

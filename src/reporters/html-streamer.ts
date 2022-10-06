@@ -66,6 +66,7 @@ export class HTMLStreamer extends Reporter {
     <div class="card">
       <span id="task-id" class="w3-badge w3-grey"></span>
       <div class="card-title"><h1 id="title"></h1></div>
+      <div id="cmd-line">...</div>
       <div id="status">...</div>
       <div class="w3-border">
         <div class="w3-green" id="progress" style="height:24px;width:0%"></div>
@@ -74,7 +75,7 @@ export class HTMLStreamer extends Reporter {
     </div>\n`);
   }
 
-  public reportInvalidTask(message?: string) {
+  public reportInvalidTask = async (message?: string) => {
     debug(`Invalid task`);
     this.updateElement("status", "created");
     this.updateElement("title", "Invalid task");
@@ -92,18 +93,18 @@ export class HTMLStreamer extends Reporter {
     );
     this.updateProgress(100, message);
     this.stream.end(`</body></html>`);
-  }
+  };
 
   private writeScript(jsCommand: string) {
     this.stream.write(`<script>${jsCommand}</script>\n`);
   }
 
   private updateProgress(percent: number, message?: string) {
-    debug(`progress: ${percent}`);
+    // debug(`progress: ${percent}`);
     this.updateElement(
       "status",
       `${percent > 0 && percent < 100 ? "In progress: " : ""}${
-        message || `${percent}%`
+        (message && message.replace("`", '"')) || `${percent}%`
       }`
     );
     this.writeScript(
@@ -121,30 +122,40 @@ export class HTMLStreamer extends Reporter {
     this.writeScript(
       `{const log = document.createElement("div"); 
        log.classList.add('log');
-       log.innerHTML = \`${new Date().toISOString()} ${level.toUpperCase()} ${message}\`;
+       log.innerHTML = \`${new Date().toISOString()} ${level.toUpperCase()} ${message.replace(
+        "`",
+        '"'
+      )}\`;
        document.getElementById("logs").appendChild(log);}`
     );
   }
 
-  protected async onEnd() {
+  protected onEnd = async () => {
     debug(`end`);
     this.stream.end(`</body></html>`);
-  }
+  };
 
-  protected async onCreate(title: string, cmdLine: string, link: string) {
+  protected onCreate = async (cmdLine: string, link: string) => {
     debug(`created`);
     this.updateElement("status", "created");
-    this.updateElement("title", title || "task");
+    this.updateElement("title", this.task.name || "task");
+    this.updateElement("cmd-line", cmdLine);
+    this.writeScript(
+      `document.getElementById("cmd-line").innerText = \`${cmdLine.replace(
+        "`",
+        '"'
+      )}\``
+    );
     this.updateElement("task-id", `#${this.task.id}`);
-  }
-  protected async onStart() {
+  };
+  protected onStart = async () => {
     this.writeScript(
       `document.getElementById("task-id").classList.remove("w3-grey");
        document.getElementById("task-id").classList.add("w3-yellow");`
     );
     this.updateElement("status", "started");
-  }
-  protected async onSuccess(message?: string) {
+  };
+  protected onSuccess = async (message?: string) => {
     this.writeScript(
       `document.getElementById("task-id").classList.remove("w3-grey", "w3-yellow");
        document.getElementById("task-id").classList.add("w3-green");`
@@ -153,9 +164,12 @@ export class HTMLStreamer extends Reporter {
       `document.getElementById("progress").classList.remove("w3-grey", "w3-yellow");
        document.getElementById("progress").classList.add("w3-green");`
     );
-    this.updateProgress(100, `Success${message ? ` - ${message}` : ""}`);
-  }
-  protected async onFailure(message?: string) {
+    this.updateProgress(
+      100,
+      `Success${message ? ` - ${message.replace("`", '"')}` : ""}`
+    );
+  };
+  protected onFailure = async (message?: string) => {
     this.writeScript(
       `document.getElementById("task-id").classList.remove("w3-grey", "w3-yellow");
        document.getElementById("task-id").classList.add("w3-red");`
@@ -164,17 +178,20 @@ export class HTMLStreamer extends Reporter {
       `document.getElementById("progress").classList.remove("w3-grey", "w3-yellow");
        document.getElementById("progress").classList.add("w3-red");`
     );
-    this.updateProgress(100, `Failure${message ? ` - ${message}` : ""}`);
-  }
-  protected async onProgress(percent: number, message?: string) {
+    this.updateProgress(
+      100,
+      `Failure${message ? ` - ${message.replace("`", '"')}` : ""}`
+    );
+  };
+  protected onProgress = async (percent: number, message?: string) => {
     debug(`progress: ${percent}`);
     this.updateProgress(percent, message);
-  }
+  };
 
-  protected async onLog(level: TaskLogLevel, message: string) {
+  protected onLog = async (level: TaskLogLevel, message: string) => {
     this.addLog(level, message);
-  }
-  protected async onAttachment(filePath: string) {
+  };
+  protected onAttachment = async (filePath: string) => {
     this.addLog("info", `File attached: ${filePath}`);
-  }
+  };
 }

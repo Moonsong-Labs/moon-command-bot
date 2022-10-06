@@ -9,7 +9,9 @@ import { WebClient } from "@slack/web-api";
 import { Express } from "express";
 import { Hook } from "./hook";
 import Debug from "debug";
+import yargs from "yargs";
 import { SlackReporter } from "../reporters/slack-reporter";
+import { TaskArguments } from "../commands/task";
 const debug = Debug("hooks:slack");
 
 export interface SlackHookConfig {
@@ -21,6 +23,8 @@ export interface SlackHookConfig {
     signingSecret: string;
   };
 }
+
+const yargParser = yargs();
 
 export class SlackHook extends Hook {
   private app: App;
@@ -45,15 +49,28 @@ export class SlackHook extends Hook {
     client: WebClient,
     ack: AckFn<string>
   ) {
-    const parts = body.text.split(" ");
-    if (parts.length < 1) {
+    const parsedData = await yargParser.parse(body.text.slice(1));
+    if (parsedData._.length < 1) {
       await ack("Missing command");
       return;
     }
-    const keyword = parts[0];
+
+    const args = {
+      options: { ...parsedData },
+      positional: parsedData._.slice(1),
+    } as TaskArguments;
+
+    const keyword = args.positional[0];
+    const cmdLine = body.text;
+    debug(
+      `Received: ${keyword}(${args.positional.join(", ")}) [${Object.keys(
+        args
+      ).find((arg) => `--${arg}=${args[arg]}`)}]`
+    );
+
     this.emit(
       "command",
-      { keyword, parameters: { cmdLine: body.text } },
+      { keyword, cmdLine, args },
       new SlackReporter(client, body.channel_id, ack)
     );
     await ack();

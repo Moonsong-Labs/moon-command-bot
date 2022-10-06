@@ -4,8 +4,10 @@ const prodConfig: BotConfig = {
   commands: {
     sample: { seconds: 10 },
     benchmark: {
+      gitFolder: `${process.cwd()}/repos`,
       repos: {
         main: {
+          name: "offical",
           owner: process.env.MOONBEAM_REPO_OWNER,
           repo: process.env.MOONBEAM_REPO_NAME,
           installationId: process.env.MOONBEAM_INSTALLATION_ID,
@@ -17,6 +19,7 @@ const prodConfig: BotConfig = {
           },
         },
         fork: {
+          name: "fork",
           owner: process.env.FORK_REPO_OWNER,
           repo: process.env.FORK_REPO_NAME,
           installationId: process.env.FORK_INSTALLATION_ID,
@@ -49,6 +52,7 @@ const prodConfig: BotConfig = {
           webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
         },
         repo: {
+          name: "offical",
           owner: process.env.GITHUB_REPO_OWNER,
           repo: process.env.GITHUB_REPO_NAME,
           installationId: process.env.GITHUB_INSTALLATION_ID,

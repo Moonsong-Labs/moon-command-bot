@@ -3,9 +3,11 @@ import { Express } from "express";
 
 import { Hook } from "./hook";
 import Debug from "debug";
+import yargs from "yargs";
 import { GithubService, GithubServiceConfig } from "../services/github";
 import { IssueCommentEvent } from "@octokit/webhooks-types";
 import { GithubReporter } from "../reporters/github-reporter";
+import { TaskArguments } from "../commands/task";
 const debug = Debug("hooks:github");
 
 interface ProbotConfig {
@@ -21,6 +23,8 @@ export interface GithubHookConfig {
   // List of repos currently allowed
   repo: GithubServiceConfig;
 }
+
+const yargParser = yargs();
 
 export class GithubHook extends Hook {
   private readonly repo: GithubService;
@@ -52,13 +56,20 @@ export class GithubHook extends Hook {
       return;
     }
 
-    const parts = commentText.slice(1).split("\n")[0].split(" ");
-    if (parts.length < 2) {
+    const cmdLine = commentText.slice(1).split("\n")[0];
+    const parsedData = await yargParser.parse(cmdLine);
+    if (parsedData._.length < 1) {
+      reply({ body: "Missing command" });
       return;
     }
 
-    const cmdLine = parts.join(" ");
-    debug(`Running cmd: ${cmdLine}`);
+    const args = {
+      options: { ...parsedData, pullNumber: payload.issue.number },
+      positional: parsedData._.slice(1),
+    } as TaskArguments;
+
+    const keyword = args.positional[0];
+    debug(`Received: ${cmdLine}`);
 
     if (
       `${this.repo.owner}/${this.repo.repo}`.toLocaleLowerCase() !==
@@ -70,7 +81,7 @@ export class GithubHook extends Hook {
 
     this.emit(
       "command",
-      { keyword: parts[0], parameters: { cmdLine } },
+      { keyword, cmdLine, args },
       new GithubReporter(this.repo, payload.issue.number)
     );
   }
