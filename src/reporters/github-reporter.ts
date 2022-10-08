@@ -86,17 +86,19 @@ export class GithubReporter extends Reporter {
     } *${this.task.name}*  
 \`${this.cmdLine}\`
 
-${this.status[0].toUpperCase() + this.status.substring(1)}: ${"".padStart(
-      this.progress / 5,
-      ":yellow_circle:"
-    )}${"".padStart(20 - this.progress / 5, ":white_circle:")}] ${this.asciiBar.renderLine()}${this.stepMessage ? ` - ${this.stepMessage}` : ``}
-
+${
+  this.status[0].toUpperCase() + this.status.substring(1)
+}: ${this.asciiBar.renderLine()}${
+      this.stepMessage ? ` - ${this.stepMessage}` : ``
+    }
     ${
       this.logs.length == 0
         ? ``
         : `
 <details><summary>:newspaper: Logs :newspaper:</summary>
-\`\`\`\n${this.logs.join("  \n")}\n\`\`\`
+<pre>
+${this.logs.join("  \n")}
+</pre>
 </details>`
     }
 `;
@@ -104,6 +106,7 @@ ${this.status[0].toUpperCase() + this.status.substring(1)}: ${"".padStart(
 
   private async updateReply() {
     this.buildMessage();
+    console.log(this.message);
     const octoRest = (await this.octoRepo.getOctokit()).rest;
     await this.pQueue.add(async () =>
       octoRest.issues.updateComment(
@@ -136,7 +139,7 @@ ${this.status[0].toUpperCase() + this.status.substring(1)}: ${"".padStart(
   };
   protected onProgress = async (percent: number, message?: string) => {
     this.status = "progress";
-    this.asciiBar.update(percent, message)
+    this.asciiBar.update(percent, message);
   };
   protected onLog = async (level: TaskLogLevel, message: string) => {
     this.message = `${this.message}  \n${level}: ${message}`;

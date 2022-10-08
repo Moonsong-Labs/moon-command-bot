@@ -73,7 +73,6 @@ export class SlackHook extends Hook {
       { keyword, cmdLine, args },
       new SlackReporter(client, body.channel_id, ack)
     );
-    await ack();
   }
 
   override async destroy() {}

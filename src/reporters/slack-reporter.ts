@@ -8,7 +8,7 @@ const debug = Debug("reporters:slack");
 
 export class SlackReporter extends Reporter {
   private client: WebClient;
-  private ackFallback: (body: string) => void;
+  private ackFallback: (body?: string) => void;
   private channelId: string;
   private messageTsPromise: Promise<string>;
   private attachments: string[];
@@ -103,6 +103,8 @@ export class SlackReporter extends Reporter {
   };
 
   protected onCreate = async (cmdLine: string, link: string) => {
+    // At this point, we know the task is being handled, and we can report acknowledgement
+    this.ackFallback()
     this.messageText = `${this.task.name}\n${cmdLine}`;
     this.cmdLine = cmdLine;
     this.title = this.task.name;
