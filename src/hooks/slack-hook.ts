@@ -27,11 +27,13 @@ export interface SlackHookConfig {
 const yargParser = yargs();
 
 export class SlackHook extends Hook {
-  private app: App;
-  private receiver: Receiver;
+  private readonly app: App;
+  private readonly receiver: Receiver;
+  private readonly config: SlackHookConfig;
 
   constructor(config: SlackHookConfig, express: Express) {
     super();
+    this.config = config;
     this.receiver = new ExpressReceiver({
       signingSecret: config.auth.signingSecret,
       app: express,
@@ -49,19 +51,20 @@ export class SlackHook extends Hook {
     client: WebClient,
     ack: AckFn<string>
   ) {
-    const parsedData = await yargParser.parse(body.text.slice(1));
-    if (parsedData._.length < 2) {
+    // body.text doesn't contain the command
+    const parsedData = await yargParser.parse(body.text);
+    if (parsedData._.length < 1) {
       await ack("Missing command");
       return;
     }
 
-    const keyword = parsedData._[1].toString();
+    const keyword = parsedData._[0].toString();
     const args = {
       options: { ...parsedData },
-      positional: parsedData._.slice(2),
+      positional: parsedData._.slice(1),
     } as TaskArguments;
 
-    const cmdLine = body.text;
+    const cmdLine = `${this.config.slackCommand} ${body.text}`;
     debug(
       `Received: ${keyword}(${args.positional.join(", ")}) [${Object.keys(
         args
