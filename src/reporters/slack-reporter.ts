@@ -48,7 +48,7 @@ export class SlackReporter extends Reporter {
     this.status = "pending";
     this.progressBar = new ProgressBar({
       undoneSymbol: ":white_circle:",
-      doneSymbol: ":blue_circle:",
+      doneSymbol: ":large_blue_circle:",
       width: 20,
     });
   }

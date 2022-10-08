@@ -37,7 +37,7 @@ export class GithubReporter extends Reporter {
     this.message = "Done";
     this.progressBar = new ProgressBar({
       undoneSymbol: ":white_circle:",
-      doneSymbol: ":blue_circle:",
+      doneSymbol: ":large_blue_circle:",
       width: 20,
     });
   }
