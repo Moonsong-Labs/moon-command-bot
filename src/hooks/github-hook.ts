@@ -20,36 +20,36 @@ export interface GithubHookConfig {
   urlPrefix: string;
   // Configuration for Probot
   probot: ProbotConfig;
-  // List of repos currently allowed
-  repo: GithubServiceConfig;
 }
 
 const yargParser = yargs();
 
 export class GithubHook extends Hook {
-  private readonly repo: GithubService;
   private readonly probot: Probot;
   public readonly isReady: Promise<GithubHook>;
 
   constructor(config: GithubHookConfig, express: Express) {
     super();
-    this.repo = new GithubService(config.repo);
     this.probot = new Probot(config.probot);
 
     const middleware = createNodeMiddleware(
       (app) => {
-        app.on(`issue_comment`, async ({ payload, issue }) => {
-          this.onWebhook(issue, payload);
+        app.on(`issue_comment`, async ({ payload, issue, octokit }) => {
+          this.onWebhook(octokit, issue, payload);
         });
       },
       { probot: this.probot }
     );
     express.use(config.urlPrefix, middleware);
 
-    this.isReady = this.repo.isReady.then(() => this);
+    this.isReady = Promise.resolve(this);
   }
 
-  async onWebhook(reply: ({ body }) => void, payload: IssueCommentEvent) {
+  onWebhook = async (
+    octokit,
+    reply: ({ body }) => void,
+    payload: IssueCommentEvent
+  ) => {
     let commentText = payload.comment.body;
     debug(`Received text: ${commentText}`);
     if (!commentText.startsWith("/")) {
@@ -71,23 +71,17 @@ export class GithubHook extends Hook {
     const keyword = args.positional[0];
     debug(`Received: ${cmdLine}`);
 
-    if (
-      `${this.repo.owner}/${this.repo.repo}`.toLocaleLowerCase() !==
-      payload.repository.full_name.toLocaleLowerCase()
-    ) {
-      reply({ body: "Repository not supported by the bot" });
-      return;
-    }
-
     this.emit(
       "command",
       { keyword, cmdLine, args },
-      new GithubReporter(this.repo, payload.issue.number)
+      new GithubReporter(
+        octokit,
+        payload.repository.owner.login,
+        payload.repository.name,
+        payload.issue.number
+      )
     );
-  }
+  };
 
-  override async destroy() {
-    await this.isReady;
-    await this.repo.destroy();
-  }
+  override async destroy() {}
 }
