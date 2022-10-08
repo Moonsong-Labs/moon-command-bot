@@ -23,9 +23,10 @@ export class ProgressBar {
 
   public render = (percent) => {
     const steps = Math.floor(percent / this.units);
-    return `${"".padStart(steps, this.doneSymbol)}${"".padStart(
-      this.width - steps,
-      this.undoneSymbol
-    )}`;
+    return `${new Array(steps).fill(this.doneSymbol).join("")}${new Array(
+      this.width
+    )
+      .fill(this.undoneSymbol)
+      .join("")}`;
   };
 }
