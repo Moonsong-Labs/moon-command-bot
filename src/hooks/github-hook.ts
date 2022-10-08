@@ -65,11 +65,11 @@ export class GithubHook extends Hook {
 
     const args = {
       options: { ...parsedData, pullNumber: payload.issue.number },
-      positional: parsedData._.slice(1),
+      positional: parsedData._,
     } as TaskArguments;
 
     const keyword = args.positional[0];
-    debug(`Received: ${cmdLine}`);
+    debug(`Received ${keyword}: ${JSON.stringify(args)}`);
 
     if (
       `${this.repo.owner}/${this.repo.repo}`.toLocaleLowerCase() !==

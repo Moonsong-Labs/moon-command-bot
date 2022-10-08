@@ -75,6 +75,7 @@ export class Commander implements Service {
     }
     const factory = this.factories[keyword];
     if (!factory) {
+      console.error(`Invalid command: ${keyword}`);
       throw new Error("Command not found");
     }
 
