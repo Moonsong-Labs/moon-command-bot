@@ -1,7 +1,7 @@
 import { Reporter } from "./reporter";
 import Debug from "debug";
 import PQueue from "p-queue";
-import AsciiBar from "ascii-bar";
+import progressString from "progress-string";
 import { TaskLogLevel } from "../commands/task";
 import { GithubService } from "../services/github";
 const debug = Debug("reporters:github");
@@ -12,13 +12,13 @@ export class GithubReporter extends Reporter {
 
   private commentIdPromise: Promise<number>;
   private attachments: string[];
-  private status: "success" | "failure" | "progress";
+  private status: "success" | "failure" | "pending" | "progress";
   private progress: number;
   private stepMessage?: string;
   private message: string;
   private cmdLine: string;
   private logs: string[];
-  private asciiBar: AsciiBar;
+  private progressBar: (progress: number) => string;
 
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
@@ -29,24 +29,17 @@ export class GithubReporter extends Reporter {
     this.octoRepo = octokit;
     this.issueNumber = issueNumber;
     this.progress = 0;
-
     this.attachments = [];
     this.logs = [];
-    this.status = "failure";
+    this.status = "pending";
     this.cmdLine = "";
     this.message = "";
     this.message = "Done";
-    this.asciiBar = new AsciiBar({
-      undoneSymbol: ":white_circle:",
-      doneSymbol: ":blue_circle:",
-      width: 20,
-      formatString: "#percent #bar",
+    this.progressBar = progressString({
+      width: 10,
       total: 100,
-      enableSpinner: false,
-      autoStop: true,
-      print: false,
-      start: 0,
-      hideCursor: true,
+      imcomplete: ":white_circle:",
+      complete: ":blue_circle:",
     });
   }
 
@@ -58,6 +51,7 @@ export class GithubReporter extends Reporter {
   private async reply() {
     debug(`Replying to issue ${this.issueNumber}`);
     const octoRest = (await this.octoRepo.getOctokit()).rest;
+    this.buildMessage();
     this.commentIdPromise = this.pQueue.add(() =>
       octoRest.issues
         .createComment(
@@ -77,18 +71,21 @@ export class GithubReporter extends Reporter {
   }
 
   private buildMessage() {
-    this.message = `${
+    const emoji =
       this.status == "success"
-        ? `:white_check_mark:`
-        : this.status == "progress"
-        ? ``
-        : `:x:`
-    } *${this.task.name}*  
+        ? ":green_circle:"
+        : this.status == "failure"
+        ? ":red_circle:"
+        : this.status == "pending"
+        ? ":white_circle:"
+        : ":yellow_circle:";
+
+    this.message = `${emoji} *${this.task.name}*  
 \`${this.cmdLine}\`
 
 ${
   this.status[0].toUpperCase() + this.status.substring(1)
-}: ${this.asciiBar.renderLine()}${
+}: ${this.progressBar(this.progress)}${
       this.stepMessage ? ` - ${this.stepMessage}` : ``
     }
     ${
@@ -129,21 +126,30 @@ ${this.logs.join("  \n")}
     this.reply();
   };
   protected onStart = async () => {
+    this.status = "progress";
     this.message = `${this.message}  \n**Starting**`;
+    return this.updateReply();
   };
   protected onSuccess = async (message?: string) => {
     this.status = "success";
+    this.stepMessage = message;
+    return this.updateReply();
   };
   protected onFailure = async (message?: string) => {
     this.status = "failure";
+    this.stepMessage = message;
+    return this.updateReply();
   };
   protected onProgress = async (percent: number, message?: string) => {
     this.status = "progress";
-    this.asciiBar.update(percent, message);
+    this.progress = percent;
+    this.stepMessage = message;
+    return this.updateReply();
   };
   protected onLog = async (level: TaskLogLevel, message: string) => {
     this.message = `${this.message}  \n${level}: ${message}`;
     this.logs.push(`${level}: ${message}`);
+    return this.updateReply();
   };
 
   protected onAttachment = async (filePath: string) => {

@@ -2,7 +2,7 @@ import { Reporter } from "./reporter";
 import { WebClient, KnownBlock } from "@slack/web-api";
 import Debug from "debug";
 import PQueue from "p-queue";
-import AsciiBar from "ascii-bar";
+import progressString from "progress-string";
 import { TaskLogLevel } from "../commands/task";
 const debug = Debug("reporters:slack");
 
@@ -16,7 +16,7 @@ export class SlackReporter extends Reporter {
   private title: string;
   private cmdLine: string;
   private link: string;
-  private asciiBar: AsciiBar;
+  private progressBar: (progress: number) => string;
 
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
@@ -46,18 +46,11 @@ export class SlackReporter extends Reporter {
     this.logs = [];
     this.messageBlocks = {};
     this.status = "pending";
-    this.asciiBar = new AsciiBar({
-      undoneSymbol: ":white_circle:",
-      doneSymbol: ":blue_circle:",
-      width: 20,
-      formatString: "#percent #bar",
+    this.progressBar = progressString({
+      width: 10,
       total: 100,
-      enableSpinner: false,
-      lastUpdateForTiming: false,
-      autoStop: true,
-      print: false,
-      start: 0,
-      hideCursor: true,
+      imcomplete: ":white_circle:",
+      complete: ":blue_circle:",
     });
   }
 
@@ -104,7 +97,7 @@ export class SlackReporter extends Reporter {
 
   protected onCreate = async (cmdLine: string, link: string) => {
     // At this point, we know the task is being handled, and we can report acknowledgement
-    this.ackFallback()
+    this.ackFallback();
     this.messageText = `${this.task.name}\n${cmdLine}`;
     this.cmdLine = cmdLine;
     this.title = this.task.name;
@@ -116,12 +109,12 @@ export class SlackReporter extends Reporter {
   private buildMessageContent() {
     const emoji =
       this.status == "success"
-        ? ":white_check_mark:"
+        ? ":green_circle:"
         : this.status == "failure"
-        ? ":x:"
+        ? ":red_circle:"
         : this.status == "pending"
-        ? ":stopwatch:"
-        : ":gear:";
+        ? ":white_circle:"
+        : ":yellow_circle:";
 
     const blocks: KnownBlock[] = [
       {
@@ -183,7 +176,7 @@ export class SlackReporter extends Reporter {
         {
           text: `*${new Date().toISOString()}* | <${
             this.link
-          }|report> | *Process* ${this.asciiBar.renderLine()} ${
+          }|report> | *Process* ${this.progressBar(percent)} ${
             message ? ` -  ${message}` : ""
           }`,
           type: "mrkdwn",
