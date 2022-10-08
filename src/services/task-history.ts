@@ -15,11 +15,16 @@ export interface TaskHistoryConfig {
   limit: number;
 
   urlPrefix: string;
+
+  // Needed to provide url feedback
+  serverUrl: string;
 }
 
 export class TaskHistory implements Service {
   public readonly limit: number;
   public isReady: Promise<Service>;
+  private serverUrl: string;
+  private urlPrefix: string;
 
   private taskRing: taskReport[];
   private taskRingIndex;
@@ -27,10 +32,16 @@ export class TaskHistory implements Service {
   constructor(config: TaskHistoryConfig, express: Express) {
     this.limit = config.limit;
     this.taskRingIndex = 0;
+    this.serverUrl = config.serverUrl;
+    this.urlPrefix = config.urlPrefix;
     this.taskRing = new Array(this.limit).fill(0);
     this.isReady = Promise.resolve(this);
 
     express.use(`${config.urlPrefix}/tasks`, this.onTaskRequest.bind(this));
+  }
+
+  public getTaskLink(taskId: number) {
+    return `${this.serverUrl}${this.urlPrefix}/${taskId}`;
   }
 
   public recordTask(task: Task) {

@@ -30,6 +30,8 @@ export class Commander implements Service {
   // Global counter for tasks
   private taskIndex: number;
 
+  private historyService?: TaskHistory;
+
   constructor(
     factories: TaskFactory[],
     hooks: Hook[],
@@ -37,6 +39,7 @@ export class Commander implements Service {
   ) {
     this.taskQueue = new pQueue({ concurrency: 1 });
     this.taskIndex = 0;
+    this.historyService = historyService;
     this.isDestroying = false;
 
     // Store factory by keyword for faster lookup
@@ -88,7 +91,7 @@ export class Commander implements Service {
         task.emit(
           "create",
           cmdLine,
-          `${process.env.SERVICE_URL}/rest/tasks/${task.id}`
+          this.historyService && this.historyService.getTaskLink(task.id)
         );
 
         // Delay executing the task for the reporter to properly listen to the task

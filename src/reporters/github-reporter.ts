@@ -15,6 +15,7 @@ export class GithubReporter extends Reporter {
   private status: "success" | "failure" | "pending" | "progress";
   private progress: number;
   private stepMessage?: string;
+  private link?: string;
   private message: string;
   private cmdLine: string;
   private logs: string[];
@@ -34,7 +35,6 @@ export class GithubReporter extends Reporter {
     this.status = "pending";
     this.cmdLine = "";
     this.message = "";
-    this.message = "Done";
     this.progressBar = new ProgressBar({
       undoneSymbol: ":white_circle:",
       doneSymbol: ":large_blue_circle:",
@@ -50,7 +50,6 @@ export class GithubReporter extends Reporter {
   private async reply() {
     debug(`Replying to issue ${this.issueNumber}`);
     const octoRest = (await this.octoRepo.getOctokit()).rest;
-    this.buildMessage();
     this.commentIdPromise = this.pQueue.add(() =>
       octoRest.issues
         .createComment(
@@ -79,7 +78,9 @@ export class GithubReporter extends Reporter {
         ? ":white_circle:"
         : ":yellow_circle:";
 
-    this.message = `${emoji} *${this.task.name}*  
+    this.message = `${emoji} *${this.task.name}* ${
+      this.link ? `| [${this.link}](report)` : `[${this.task.id.toString()}]`
+    }
 \`${this.cmdLine}\`
 
 ${
@@ -119,14 +120,14 @@ ${this.logs.join("  \n")}
     return this.updateReply();
   };
 
-  protected onCreate = async (cmdLine: string, link: string) => {
+  protected onCreate = async (cmdLine: string, link?: string) => {
     this.cmdLine = cmdLine;
-    this.message = `${this.task.name}  \n[Report](${link})\n\ncmd: ${cmdLine}`;
+    this.link = link;
     this.reply();
   };
   protected onStart = async () => {
     this.status = "progress";
-    this.message = `${this.message}  \n**Starting**`;
+    this.stepMessage = `Starting`;
     return this.updateReply();
   };
   protected onSuccess = async (message?: string) => {
@@ -144,7 +145,6 @@ ${this.logs.join("  \n")}
     return this.updateReply();
   };
   protected onLog = async (level: TaskLogLevel, message: string) => {
-    this.message = `${this.message}  \n${level}: ${message}`;
     this.logs.push(`${level}: ${message}`);
     return this.updateReply();
   };

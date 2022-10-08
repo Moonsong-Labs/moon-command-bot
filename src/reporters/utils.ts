@@ -5,9 +5,9 @@ export class ProgressBar {
   private units: number;
 
   constructor(opts: {
-    width: number;
-    undoneSymbol: string;
-    doneSymbol: string;
+    width?: number;
+    undoneSymbol?: string;
+    doneSymbol?: string;
   }) {
     const parameters = {
       width: 10,
@@ -24,7 +24,7 @@ export class ProgressBar {
   public render = (percent) => {
     const steps = Math.floor(percent / this.units);
     return `${new Array(steps).fill(this.doneSymbol).join("")}${new Array(
-      this.width
+      this.width - steps
     )
       .fill(this.undoneSymbol)
       .join("")}`;

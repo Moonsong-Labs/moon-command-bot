@@ -49,7 +49,7 @@ export class SlackReporter extends Reporter {
     this.progressBar = new ProgressBar({
       undoneSymbol: ":white_circle:",
       doneSymbol: ":large_blue_circle:",
-      width: 20,
+      width: 10,
     });
   }
 
@@ -94,7 +94,7 @@ export class SlackReporter extends Reporter {
     }
   };
 
-  protected onCreate = async (cmdLine: string, link: string) => {
+  protected onCreate = async (cmdLine: string, link?: string) => {
     // At this point, we know the task is being handled, and we can report acknowledgement
     this.ackFallback();
     this.messageText = `${this.task.name}\n${cmdLine}`;
@@ -173,9 +173,9 @@ export class SlackReporter extends Reporter {
       type: "context",
       elements: [
         {
-          text: `*${new Date().toISOString()}* | <${
-            this.link
-          }|report> | *Process* ${this.progressBar.render(percent)} ${
+          text: `*${new Date().toISOString()}* | ${
+            this.link ? `<${this.link}|report>` : this.task.id.toString()
+          } | *Process* ${this.progressBar.render(percent)} ${
             message ? ` -  ${message}` : ""
           }`,
           type: "mrkdwn",

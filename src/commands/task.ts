@@ -13,7 +13,7 @@ export type TaskEvents = {
 
   // The following events are controlled by the Commander;
   // When the task is created
-  create: (cmdLine: string, link: string) => void;
+  create: (cmdLine: string, link?: string) => void;
   // When the task started
   start: () => void;
   // When the task is inserted or move in the queue

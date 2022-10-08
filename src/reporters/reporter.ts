@@ -20,7 +20,7 @@ export abstract class Reporter {
 
   public abstract reportInvalidTask: (message?: string) => Promise<void>;
 
-  protected onCreate = async (cmdLine: string, link: string) => {
+  protected onCreate = async (cmdLine: string, link?: string) => {
     debug(`  - [${this.task.keyword}-${this.task.id}] Created: ${link}`);
   };
   protected onQueue = async (position: number) => {
