@@ -63,12 +63,12 @@ export class GithubHook extends Hook {
       return;
     }
 
+    const keyword = parsedData._[0].toString();
     const args = {
       options: { ...parsedData, pullNumber: payload.issue.number },
-      positional: parsedData._,
+      positional: parsedData._.slice(1),
     } as TaskArguments;
 
-    const keyword = args.positional[0];
     debug(`Received ${keyword}: ${JSON.stringify(args)}`);
 
     if (

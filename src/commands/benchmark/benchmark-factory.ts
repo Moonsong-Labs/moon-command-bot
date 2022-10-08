@@ -1,6 +1,6 @@
 import { GithubService, GithubServiceConfig } from "../../services/github";
 import { TaskFactory } from "../factory";
-import { BenchmarkRepos, BenchmarkTask } from "./benchmark";
+import { BenchmarkRepos, BenchmarkTask } from "./benchmark-task";
 import { validateCommand } from "../../actions/benchmark";
 import { TaskArguments } from "../task";
 
@@ -12,7 +12,7 @@ export class BenchmarkFactoryConfig {
   };
 }
 
-export type BenchmarkTaskParameters = TaskArguments & {
+export type BenchmarkTaskArguments = TaskArguments & {
   // The pull request to execute the benchmark on
   // It is used by the github hook and override the given --pr parameter
   positional: [type: string, palletName: string];
@@ -38,7 +38,7 @@ export class BenchmarkFactory extends TaskFactory {
     ).then(() => this);
   }
 
-  public createTask(id: number, parameters: BenchmarkTaskParameters) {
+  public createTask(id: number, parameters: BenchmarkTaskArguments) {
     if (!parameters.positional || parameters.positional.length < 2) {
       throw new Error("Expect 2 parameters");
     }

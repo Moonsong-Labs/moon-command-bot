@@ -1,6 +1,6 @@
 import { TaskFactory } from "../factory";
 import { TaskArguments } from "../task";
-import { SampleTask } from "./sample";
+import { SampleTask } from "./sample-task";
 import Debug from "debug";
 const debug = Debug("commands:sample-factory");
 
@@ -8,13 +8,8 @@ export class SampleFactoryConfig {
   seconds: number;
 }
 
-export type SampleTaskParameters = TaskArguments & {
-  // The pull request to execute the benchmark on
-  // It is used by the github hook and override the given --pr parameter
-  positional: [type: string, palletName: string];
-  options: {
-    pullNumber?: string;
-  };
+export type SampleTaskArguments = TaskArguments & {
+  positional: [seconds?: number];
 };
 
 const MAX_DELAY = 15;
@@ -28,7 +23,7 @@ export class SampleFactory extends TaskFactory {
     this.seconds = seconds;
   }
 
-  public createTask(id: number, args: TaskArguments) {
+  public createTask(id: number, args: SampleTaskArguments) {
     debug(args.positional)
     const delay =
       args.positional && args.positional.length > 0

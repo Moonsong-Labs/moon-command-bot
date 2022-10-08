@@ -1,5 +1,5 @@
 import { TaskFactory } from "../factory";
-import { BlockTimeTask, Network } from "./block-time";
+import { BlockTimeTask, Network } from "./block-time-task";
 import { Argv as ApiNetworkConfig, getApiFor } from "moonbeam-tools";
 import { TaskArguments } from "../task";
 export { Argv as ApiNetworkConfig } from "moonbeam-tools";
@@ -7,6 +7,9 @@ export { Argv as ApiNetworkConfig } from "moonbeam-tools";
 export interface BlockTimeFactoryConfig {
   networks: ApiNetworkConfig[];
 }
+
+export type BlockTimeTaskArguments = TaskArguments;
+
 export class BlockTimeFactory extends TaskFactory {
   private networkApis: Network[];
 
@@ -24,7 +27,7 @@ export class BlockTimeFactory extends TaskFactory {
     });
   }
 
-  public createTask(id: number, args: TaskArguments) {
+  public createTask(id: number, args: BlockTimeTaskArguments) {
     if (!args.positional || args.positional.length < 1) {
       throw new Error("not enough parameters");
     }

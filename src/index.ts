@@ -4,13 +4,13 @@ import express from "express";
 import { Commander } from "./commands/commander";
 import { Hook } from "./hooks/hook";
 import { HttpHook } from "./hooks/http-hook";
-import { SampleFactory } from "./commands/sample/factory";
-import { BenchmarkFactory } from "./commands/benchmark/factory";
+import { SampleFactory } from "./commands/sample/sample-factory";
+import { BenchmarkFactory } from "./commands/benchmark/benchmark-factory";
+import { BlockTimeFactory } from "./commands/block-time/block-time-factory";
 import { TaskHistory } from "./services/task-history";
 import { SlackHook } from "./hooks/slack-hook";
 import { TaskFactory } from "./commands/factory";
 import { GithubHook } from "./hooks/github-hook";
-import { BlockTimeFactory } from "./commands/block-time/factory";
 import { BotConfig } from "./configs/config-types";
 
 let isTerminating = false;

@@ -1,6 +1,6 @@
-import { BenchmarkFactoryConfig } from "../commands/benchmark/factory";
-import { BlockTimeFactoryConfig } from "../commands/block-time/factory";
-import { SampleFactoryConfig } from "../commands/sample/factory";
+import { BenchmarkFactoryConfig } from "../commands/benchmark/benchmark-factory";
+import { BlockTimeFactoryConfig } from "../commands/block-time/block-time-factory";
+import { SampleFactoryConfig } from "../commands/sample/sample-factory";
 import { GithubHookConfig } from "../hooks/github-hook";
 import { HttpHookConfig } from "../hooks/http-hook";
 import { SlackHookConfig } from "../hooks/slack-hook";

@@ -50,17 +50,17 @@ export class SlackHook extends Hook {
     ack: AckFn<string>
   ) {
     const parsedData = await yargParser.parse(body.text.slice(1));
-    if (parsedData._.length < 1) {
+    if (parsedData._.length < 2) {
       await ack("Missing command");
       return;
     }
 
+    const keyword = parsedData._[1].toString();
     const args = {
       options: { ...parsedData },
-      positional: parsedData._.slice(1),
+      positional: parsedData._.slice(2),
     } as TaskArguments;
 
-    const keyword = args.positional[0];
     const cmdLine = body.text;
     debug(
       `Received: ${keyword}(${args.positional.join(", ")}) [${Object.keys(
