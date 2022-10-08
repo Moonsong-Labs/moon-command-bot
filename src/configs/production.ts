@@ -40,7 +40,11 @@ const prodConfig: BotConfig = {
       ],
     },
   },
-  history: { limit: 1000, urlPrefix: "/history" },
+  history: {
+    limit: 1000,
+    urlPrefix: "/history",
+    serverUrl: process.env.BOT_URL,
+  },
   hooks: {
     http: { urlPrefix: "/api" },
     github: {
@@ -75,10 +79,7 @@ const prodConfig: BotConfig = {
       },
     },
   },
-  server: {
-    url: process.env.BOT_URL,
-    listener: { port: 8000, hostname: "0.0.0.0" },
-  },
+  server: { listener: { port: 8000, hostname: "0.0.0.0" } },
 };
 
 export default prodConfig;

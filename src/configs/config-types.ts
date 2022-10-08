@@ -25,6 +25,5 @@ export interface BotConfig {
       hostname: string;
       port: number;
     }
-    url: string;
   }
 }

@@ -114,7 +114,7 @@ export async function start(env: BotConfig) {
     console.log(
       `- Start extra service: [${chalk.yellow(
         env.history.urlPrefix
-      )}] TaskHistory`
+      )}] TaskHistory (URL ${env.history.serverUrl})`
     );
     historyService = new TaskHistory(env.history, app);
   }
@@ -132,6 +132,5 @@ export async function start(env: BotConfig) {
       resolve(server);
     });
   });
-  console.log(`-                 URL: ${chalk.yellow(`${env.server.url}`)}`);
   console.log(`=============== ${chalk.green("Ready")} ==============`);
 }
