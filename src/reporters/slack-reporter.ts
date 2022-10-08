@@ -2,8 +2,8 @@ import { Reporter } from "./reporter";
 import { WebClient, KnownBlock } from "@slack/web-api";
 import Debug from "debug";
 import PQueue from "p-queue";
-import progressString from "progress-string";
 import { TaskLogLevel } from "../commands/task";
+import { ProgressBar } from "./utils";
 const debug = Debug("reporters:slack");
 
 export class SlackReporter extends Reporter {
@@ -16,7 +16,7 @@ export class SlackReporter extends Reporter {
   private title: string;
   private cmdLine: string;
   private link: string;
-  private progressBar: (progress: number) => string;
+  private progressBar: ProgressBar;
 
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
@@ -46,11 +46,10 @@ export class SlackReporter extends Reporter {
     this.logs = [];
     this.messageBlocks = {};
     this.status = "pending";
-    this.progressBar = progressString({
-      width: 10,
-      total: 100,
-      imcomplete: ":white_circle:",
-      complete: ":blue_circle:",
+    this.progressBar = new ProgressBar({
+      undoneSymbol: ":white_circle:",
+      doneSymbol: ":blue_circle:",
+      width: 20,
     });
   }
 
@@ -176,7 +175,7 @@ export class SlackReporter extends Reporter {
         {
           text: `*${new Date().toISOString()}* | <${
             this.link
-          }|report> | *Process* ${this.progressBar(percent)} ${
+          }|report> | *Process* ${this.progressBar.render(percent)} ${
             message ? ` -  ${message}` : ""
           }`,
           type: "mrkdwn",

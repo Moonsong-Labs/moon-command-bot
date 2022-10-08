@@ -1,9 +1,9 @@
 import { Reporter } from "./reporter";
 import Debug from "debug";
 import PQueue from "p-queue";
-import progressString from "progress-string";
 import { TaskLogLevel } from "../commands/task";
 import { GithubService } from "../services/github";
+import { ProgressBar } from "./utils";
 const debug = Debug("reporters:github");
 
 export class GithubReporter extends Reporter {
@@ -18,7 +18,7 @@ export class GithubReporter extends Reporter {
   private message: string;
   private cmdLine: string;
   private logs: string[];
-  private progressBar: (progress: number) => string;
+  private progressBar: ProgressBar;
 
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
@@ -35,11 +35,10 @@ export class GithubReporter extends Reporter {
     this.cmdLine = "";
     this.message = "";
     this.message = "Done";
-    this.progressBar = progressString({
-      width: 10,
-      total: 100,
-      imcomplete: ":white_circle:",
-      complete: ":blue_circle:",
+    this.progressBar = new ProgressBar({
+      undoneSymbol: ":white_circle:",
+      doneSymbol: ":blue_circle:",
+      width: 20,
     });
   }
 
@@ -85,7 +84,7 @@ export class GithubReporter extends Reporter {
 
 ${
   this.status[0].toUpperCase() + this.status.substring(1)
-}: ${this.progressBar(this.progress)}${
+}: ${this.progressBar.render(this.progress)}${
       this.stepMessage ? ` - ${this.stepMessage}` : ``
     }
     ${
@@ -132,18 +131,16 @@ ${this.logs.join("  \n")}
   };
   protected onSuccess = async (message?: string) => {
     this.status = "success";
-    this.stepMessage = message;
+    this.progress = 100;
     return this.updateReply();
   };
   protected onFailure = async (message?: string) => {
     this.status = "failure";
-    this.stepMessage = message;
     return this.updateReply();
   };
   protected onProgress = async (percent: number, message?: string) => {
     this.status = "progress";
     this.progress = percent;
-    this.stepMessage = message;
     return this.updateReply();
   };
   protected onLog = async (level: TaskLogLevel, message: string) => {
