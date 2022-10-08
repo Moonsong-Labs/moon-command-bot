@@ -20,7 +20,7 @@
   },
   "history": {
     "limit": 1000,
-    "urlPrefix": "/history/test/tasks"
+    "urlPrefix": "/tasks"
   },
   "hooks": {
     "http": {

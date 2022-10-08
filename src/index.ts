@@ -97,7 +97,7 @@ export async function start(env: BotConfig) {
       console.log(
         `-       Register hook: [${chalk.yellow(
           githubConfig.urlPrefix
-        )}] Github (Application Id: ${githubConfig.probot.appId})`
+        )}] Github (${githubConfig.repo.owner}/${githubConfig.repo.repo})`
       );
       hooks.push(new GithubHook(githubConfig, app));
     }

@@ -3,14 +3,11 @@ import Debug from "debug";
 import PQueue from "p-queue";
 import { TaskLogLevel } from "../commands/task";
 import { GithubService } from "../services/github";
-import { Octokit } from "octokit";
 const debug = Debug("reporters:github");
 
 export class GithubReporter extends Reporter {
-  private octokit: Octokit;
+  private octoRepo: GithubService;
   private issueNumber: number;
-  private owner: string;
-  private repo: string;
 
   private commentIdPromise: Promise<number>;
   private attachments: string[];
@@ -21,17 +18,10 @@ export class GithubReporter extends Reporter {
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
 
-  constructor(
-    octokit: Octokit,
-    owner: string,
-    repo: string,
-    issueNumber: number
-  ) {
+  constructor(octokit: GithubService, issueNumber: number) {
     super();
     this.pQueue = new PQueue({ concurrency: 1 });
-    this.octokit = octokit;
-    this.owner = owner;
-    this.repo = repo;
+    this.octoRepo = octokit;
     this.issueNumber = issueNumber;
     this.attachments = [];
     this.logs = [];
@@ -42,38 +32,39 @@ export class GithubReporter extends Reporter {
   public reportInvalidTask = async (message?: string) => {
     this.message = message || `Invalid task`;
     this.reply();
-  };
+  }
 
   private async reply() {
     debug(`Replying to issue ${this.issueNumber}`);
-    this.commentIdPromise = this.pQueue
-      .add(() =>
-        this.octokit.rest.issues.createComment({
-          owner: this.owner,
-          repo: this.repo,
-          body: this.message,
-          issue_number: this.issueNumber,
+    const octoRest = (await this.octoRepo.getOctokit()).rest;
+    this.commentIdPromise = this.pQueue.add(() =>
+      octoRest.issues
+        .createComment(
+          this.octoRepo.extendRepoOwner({
+            body: this.message,
+            issue_number: this.issueNumber,
+          })
+        )
+        .then((issueComment) => {
+          debug(
+            `Created issue ${this.issueNumber} comment ${issueComment.data.id}`
+          );
+          return issueComment.data.id;
         })
-      )
-      .then((issueComment) => {
-        debug(
-          `Created issue ${this.issueNumber} comment ${issueComment.data.id}`
-        );
-        return issueComment.data.id;
-      });
+    );
     await this.commentIdPromise;
   }
 
   private async updateReply() {
-    const octoRest = this.octokit.rest;
+    const octoRest = (await this.octoRepo.getOctokit()).rest;
     await this.pQueue.add(async () =>
-      octoRest.issues.updateComment({
-        owner: this.owner,
-        repo: this.repo,
-        body: this.message,
-        comment_id: await this.commentIdPromise,
-        issue_number: this.issueNumber,
-      })
+      octoRest.issues.updateComment(
+        this.octoRepo.extendRepoOwner({
+          body: this.message,
+          comment_id: await this.commentIdPromise,
+          issue_number: this.issueNumber,
+        })
+      )
     );
   }
 
