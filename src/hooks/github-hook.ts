@@ -13,7 +13,7 @@ const debug = Debug("hooks:github");
 interface ProbotConfig {
   privateKey: string;
   appId: string;
-  webhookSecret: string;
+  secret: string;
 }
 export interface GithubHookConfig {
   // Url prefix to listen to (ex: /github/moonbeam)

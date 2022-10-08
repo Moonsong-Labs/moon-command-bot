@@ -49,7 +49,7 @@ const prodConfig: BotConfig = {
         probot: {
           privateKey: process.env.GITHUB_PRIVATE_KEY,
           appId: process.env.GITHUB_APP_ID,
-          webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
+          secret: process.env.GITHUB_WEBHOOK_SECRET || undefined,
         },
         repo: {
           name: "offical",
