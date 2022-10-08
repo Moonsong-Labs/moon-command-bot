@@ -2,6 +2,7 @@ import { Reporter } from "./reporter";
 import { WebClient, KnownBlock } from "@slack/web-api";
 import Debug from "debug";
 import PQueue from "p-queue";
+import AsciiBar from "ascii-bar";
 import { TaskLogLevel } from "../commands/task";
 const debug = Debug("reporters:slack");
 
@@ -15,6 +16,7 @@ export class SlackReporter extends Reporter {
   private title: string;
   private cmdLine: string;
   private link: string;
+  private asciiBar: AsciiBar;
 
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
@@ -44,6 +46,19 @@ export class SlackReporter extends Reporter {
     this.logs = [];
     this.messageBlocks = {};
     this.status = "pending";
+    this.asciiBar = new AsciiBar({
+      undoneSymbol: ":white_circle:",
+      doneSymbol: ":blue_circle:",
+      width: 20,
+      formatString: "#percent #bar",
+      total: 100,
+      enableSpinner: false,
+      lastUpdateForTiming: false,
+      autoStop: true,
+      print: false,
+      start: 0,
+      hideCursor: true,
+    });
   }
 
   private async postMessage() {
@@ -166,10 +181,7 @@ export class SlackReporter extends Reporter {
         {
           text: `*${new Date().toISOString()}* | <${
             this.link
-          }|report> | *Process* [${"".padStart(percent / 5, "#")}${"".padStart(
-            20 - percent / 5,
-            " "
-          )}] ${percent.toString().padStart(3, " ")}%${
+          }|report> | *Process* ${this.asciiBar.renderLine()} ${
             message ? ` -  ${message}` : ""
           }`,
           type: "mrkdwn",

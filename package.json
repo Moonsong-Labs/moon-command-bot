@@ -28,6 +28,7 @@
     "@octokit/webhooks": "^9.17.0",
     "@slack/bolt": "^3.12.1",
     "@twilio/replay-event-emitter": "^0.3.1",
+    "ascii-bar": "^1.0.3",
     "chalk": "^4.1.2",
     "debug": "^4.3.4",
     "express": "^4.18.1",
