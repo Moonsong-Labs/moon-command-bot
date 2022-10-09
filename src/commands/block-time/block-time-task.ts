@@ -27,7 +27,6 @@ export type BlockTimeTaskParameters = (
 };
 
 export class BlockTimeTask extends Task {
-  private networkApis: Network[];
   public readonly name: string;
   private cancelled: boolean;
   private namePadding: number;
@@ -53,7 +52,7 @@ export class BlockTimeTask extends Task {
       const { blockNumber } = this.parameters;
       let progress = 0;
       await Promise.all(
-        this.networkApis.map(async ({ api, name }) => {
+        this.parameters.networkApis.map(async ({ api, name }) => {
           const { blockCount, date } = await getBlockDate(api, blockNumber);
           this.emit(
             "log",
@@ -68,7 +67,7 @@ export class BlockTimeTask extends Task {
           );
           this.emit(
             "progress",
-            Math.round((progress += 100 / this.networkApis.length))
+            Math.round((progress += 100 / this.parameters.networkApis.length))
           );
         })
       );
@@ -87,7 +86,7 @@ export class BlockTimeTask extends Task {
       }
       let progress = 0;
       await Promise.all(
-        this.networkApis.map(async ({ api, name }) => {
+        this.parameters.networkApis.map(async ({ api, name }) => {
           if (this.cancelled) {
             throw new Error("Cancelled");
           }
@@ -108,7 +107,7 @@ export class BlockTimeTask extends Task {
           );
           this.emit(
             "progress",
-            Math.round((progress += 100 / this.networkApis.length))
+            Math.round((progress += 100 / this.parameters.networkApis.length))
           );
         })
       );
