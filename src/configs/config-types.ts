@@ -1,3 +1,4 @@
+import { GovernanceFactoryConfig } from "src/commands/governance/governance-factory";
 import { BenchmarkFactoryConfig } from "../commands/benchmark/benchmark-factory";
 import { BlockTimeFactoryConfig } from "../commands/block-time/block-time-factory";
 import { SampleFactoryConfig } from "../commands/sample/sample-factory";
@@ -11,6 +12,7 @@ export interface BotConfig {
     sample?: SampleFactoryConfig;
     benchmark?: BenchmarkFactoryConfig;
     "block-time"?: BlockTimeFactoryConfig;
+    governance?: GovernanceFactoryConfig;
   };
   hooks: {
     http?: HttpHookConfig;
@@ -24,6 +26,6 @@ export interface BotConfig {
     listener: {
       hostname: string;
       port: number;
-    }
-  }
+    };
+  };
 }

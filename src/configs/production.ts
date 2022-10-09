@@ -39,6 +39,13 @@ const prodConfig: BotConfig = {
         { network: "moonbeam" },
       ],
     },
+    governance: {
+      networks: [
+        { network: "alphanet" },
+        { network: "moonriver" },
+        { network: "moonbeam" },
+      ],
+    },
   },
   history: {
     limit: 1000,

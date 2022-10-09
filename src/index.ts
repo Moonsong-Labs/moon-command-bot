@@ -12,6 +12,7 @@ import { SlackHook } from "./hooks/slack-hook";
 import { TaskFactory } from "./commands/factory";
 import { GithubHook } from "./hooks/github-hook";
 import { BotConfig } from "./configs/config-types";
+import { GovernanceFactory } from "./commands/governance/governance-factory";
 
 let isTerminating = false;
 
@@ -74,6 +75,12 @@ export async function start(env: BotConfig) {
     console.log(`-      Enable command: ${chalk.green("block-time")}`);
     taskFactories.push(
       new BlockTimeFactory("block-time", env.commands["block-time"])
+    );
+  }
+  if (env.commands["governance"]) {
+    console.log(`-      Enable command: ${chalk.green("governance")}`);
+    taskFactories.push(
+      new GovernanceFactory("governance", env.commands["governance"])
     );
   }
   if (env.commands.benchmark) {

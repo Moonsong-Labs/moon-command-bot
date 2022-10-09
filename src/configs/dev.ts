@@ -11,10 +11,21 @@ const prodConfig: BotConfig = {
         { network: "moonbeam" },
       ],
     },
+    governance: {
+      networks: [
+        { network: "alphanet" },
+        { network: "moonriver" },
+        { network: "moonbeam" },
+      ],
+    },
   },
-  history: { serverUrl: "http://localhost:8000", limit: 1000, urlPrefix: "/history/test/tasks" },
+  history: {
+    serverUrl: "http://localhost:8000",
+    limit: 1000,
+    urlPrefix: "/history/test/tasks",
+  },
   hooks: { http: { urlPrefix: "/api" } },
-  server: { listener: {port: 8000, hostname: "0.0.0.0" }},
+  server: { listener: { port: 8000, hostname: "0.0.0.0" } },
 };
 
 export default prodConfig;

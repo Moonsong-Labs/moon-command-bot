@@ -16,6 +16,19 @@
           "network": "moonbeam"
         }
       ]
+    },
+    "governance": {
+      "networks": [
+        {
+          "network": "alphanet"
+        },
+        {
+          "network": "moonriver"
+        },
+        {
+          "network": "moonbeam"
+        }
+      ]
     }
   },
   "history": {
