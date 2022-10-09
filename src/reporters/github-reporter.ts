@@ -83,9 +83,9 @@ export class GithubReporter extends Reporter {
     }
 \`${this.cmdLine}\`
 
-${
-  this.status[0].toUpperCase() + this.status.substring(1)
-}: ${this.progressBar.render(this.progress)}${
+**${
+      this.status[0].toUpperCase() + this.status.substring(1)
+    }**: ${this.progressBar.render(this.progress)}${
       this.stepMessage ? ` - ${this.stepMessage}` : ``
     }
     ${
@@ -132,15 +132,18 @@ ${this.logs.join("  \n")}
   };
   protected onSuccess = async (message?: string) => {
     this.status = "success";
+    this.stepMessage = message;
     this.progress = 100;
     return this.updateReply();
   };
   protected onFailure = async (message?: string) => {
     this.status = "failure";
+    this.stepMessage = message;
     return this.updateReply();
   };
   protected onProgress = async (percent: number, message?: string) => {
     this.status = "progress";
+    this.stepMessage = message;
     this.progress = percent;
     return this.updateReply();
   };

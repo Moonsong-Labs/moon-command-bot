@@ -108,12 +108,12 @@ export class SlackReporter extends Reporter {
   private buildMessageContent() {
     const emoji =
       this.status == "success"
-        ? ":green_circle:"
+        ? ":large_green_circle:"
         : this.status == "failure"
         ? ":red_circle:"
         : this.status == "pending"
-        ? ":white_circle:"
-        : ":yellow_circle:";
+        ? ":large_white_circle:"
+        : ":large_yellow_circle:";
 
     const blocks: KnownBlock[] = [
       {

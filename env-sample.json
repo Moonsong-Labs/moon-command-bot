@@ -24,6 +24,7 @@
   },
   "hooks": {
     "http": {
+      "serverUrl": "http://localhost:8000",
       "urlPrefix": "/api"
     },
     "slack": {
@@ -36,7 +37,6 @@
     }
   },
   "server": {
-    "url": "http://localhost:8000",
     "listener": {
       "port": 8000,
       "hostname": "0.0.0.0"
