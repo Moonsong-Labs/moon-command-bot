@@ -37,7 +37,7 @@ export class TaskHistory implements Service {
     this.taskRing = new Array(this.limit).fill(0);
     this.isReady = Promise.resolve(this);
 
-    express.use(`${config.urlPrefix}/tasks`, this.onTaskRequest.bind(this));
+    express.use(config.urlPrefix, this.onTaskRequest.bind(this));
   }
 
   public getTaskLink(taskId: number) {
