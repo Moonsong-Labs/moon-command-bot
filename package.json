@@ -1,6 +1,6 @@
 {
   "name": "moon-command-bot",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Bot to handle command for Moonbeam",
   "author": "Crystalin <alan@purestake.com>",
@@ -21,7 +21,7 @@
     "prettier": "prettier '{*,**/*}.{ts,js,json,yaml,html}'",
     "format": "npm run prettier --write",
     "lint": "npm run prettier --check",
-    "publish": "npm run build && cd bins/moon-bot/ && npm publish"
+    "publish": "npm run build && cd bins/moon-bot/ && npm version patch --force && npm publish"
   },
   "dependencies": {
     "@octokit/auth-app": "^3.5.3",
