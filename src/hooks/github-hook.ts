@@ -29,7 +29,6 @@ const yargParser = yargs();
 export class GithubHook extends Hook {
   private readonly repo: GithubService;
   private readonly probot: Probot;
-  public readonly isReady: Promise<GithubHook>;
 
   constructor(config: GithubHookConfig, express: Express) {
     super();

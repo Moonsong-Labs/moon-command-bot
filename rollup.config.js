@@ -51,7 +51,6 @@ export default [
     external,
     plugins: [
       typescript({
-        abortOnError: false,
         tsconfigOverride: { compilerOptions: { module: "es2020" } },
       }),
       commonjs({ include: ["node_modules/debug/src/index.js"] }),
@@ -107,7 +106,6 @@ export default [
         extensions: [".js", ".json", ".ts"],
       }),
       typescript({
-        abortOnError: false,
         tsconfigOverride: { compilerOptions: { module: "es2020" } },
       }),
       preserveShebangs(),

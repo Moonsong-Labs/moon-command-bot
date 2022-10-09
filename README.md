@@ -36,7 +36,19 @@ The bot is able to receive commands from different sources:
 
 Through `/<command> <...args>` from comments in github issues and pull_request. The bot will reply by creating a new comment.
 
-It requires to configure the github hook with webhook information. (TODO: Add instructions)
+It requires to configure the github hook with webhook information.
+
+#### Webhook Registration
+
+To support Github Webhook, you need to setup a webhook in your repo. This is done directly in the `webhook` section of the repository. You will also need to add the MoonCommandBot application (see next section) in order to reply to the comment.
+
+Webhook settings: https://github.com/purestake/moonbeam/settings/hooks
+`Add Webhook`, here are the suggested parameters:
+ 
+* Payload Url: https://your-domain-or-ip.com/github (the `/github` should match the urlPrefix in your config: `/github` by default)
+* Content Type: `application/json`
+* Secret: `<generated-very-long-random-string>` (Copy the secret into your [configuration](#configuration) probot => secret)
+* Select **individual events** => `Issue comments`
 
 ### Slack
 

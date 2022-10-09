@@ -24,7 +24,6 @@ export type BenchmarkTaskArguments = TaskArguments & {
 export class BenchmarkFactory extends TaskFactory {
   private readonly repos: BenchmarkRepos;
   private readonly gitFolder: string;
-  public readonly isReady: Promise<BenchmarkFactory>;
 
   constructor(keyword: string, config: BenchmarkFactoryConfig) {
     super(keyword);
