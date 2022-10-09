@@ -79,7 +79,7 @@ export class GithubReporter extends Reporter {
         : ":yellow_circle:";
 
     this.message = `${emoji} *${this.task.name}* ${
-      this.link ? `| [${this.link}](report)` : `[${this.task.id.toString()}]`
+      this.link ? `| [report](${this.link})` : `[${this.task.id.toString()}]`
     }
 \`${this.cmdLine}\`
 
