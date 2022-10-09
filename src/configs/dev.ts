@@ -12,9 +12,9 @@ const prodConfig: BotConfig = {
       ],
     },
   },
-  history: { limit: 1000, urlPrefix: "/history/test/tasks" },
+  history: { serverUrl: "http://localhost:8000", limit: 1000, urlPrefix: "/history/test/tasks" },
   hooks: { http: { urlPrefix: "/api" } },
-  server: { url: "http://localhost:8000", listener: {port: 8000, hostname: "0.0.0.0" }},
+  server: { listener: {port: 8000, hostname: "0.0.0.0" }},
 };
 
 export default prodConfig;
