@@ -89,7 +89,8 @@ export class GithubReporter extends Reporter {
     }**: ${this.progressBar.render(this.progress)}${
       this.stepMessage ? ` - ${this.stepMessage}` : ``
     }
-    ${this.result ? `${this.result}\n` : ""}
+
+${this.result ? `${this.result}\n\n` : ""}
     ${
       this.logs.length == 0
         ? ``
