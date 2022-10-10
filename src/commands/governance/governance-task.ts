@@ -6,7 +6,7 @@ import humanizeNumber from "humanize-number";
 
 import Debug from "debug";
 import { getBlockDate } from "../../actions/block-time";
-import { callInterpreter, renderCallInterpretation } from "../../utils/call";
+import { callInterpreter, renderCallMarkdown } from "../../utils/call";
 const debug = Debug("commands:Governance");
 
 export interface Network {
@@ -69,7 +69,7 @@ export class GovernanceTask extends Task {
                 callData.depth == 0
                   ? null
                   : callData.subCalls
-                      .map((c) => renderCallInterpretation(c, "  \n", 1))
+                      .map((c) => renderCallMarkdown(c, "  \n", 1))
                       .join("  \n");
             } else {
               imageText = preimageHash.toString();
