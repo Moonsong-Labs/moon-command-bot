@@ -11,6 +11,7 @@ export abstract class Reporter {
     this.task.on("queue", this.onQueue);
     this.task.on("progress", this.onProgress);
     this.task.on("log", this.onLog);
+    this.task.on("result", this.onResult);
     this.task.on("failure", this.onFailure);
     this.task.on("success", this.onSuccess);
     this.task.on("attachment", this.onAttachment);
@@ -50,5 +51,8 @@ export abstract class Reporter {
   };
   protected onEnd = async () => {
     debug(`  - [${this.task.keyword}-${this.task.id}] End`);
+  };
+  protected onResult = async (mrkdwnMessage: string) => {
+    debug(`  - [${this.task.keyword}-${this.task.id}] Result: ${mrkdwnMessage}`);
   };
 }

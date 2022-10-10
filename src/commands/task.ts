@@ -6,8 +6,10 @@ export type TaskLogLevel = "debug" | "info" | "warn" | "error";
 export type TaskEvents = {
   // When the task is progressing
   progress: (percentage: number, message?: string) => void;
-  // When the task emits attachments
+  // When the task emits logs
   log: (level: TaskLogLevel, message: string) => void;
+  // when the task emits the result
+  result: (message: string) => void;
   // When the task emits attachments
   attachment: (filePath?: string) => void;
 

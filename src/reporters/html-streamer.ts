@@ -1,6 +1,7 @@
 import { Reporter } from "./reporter";
 import { Writable } from "node:stream";
 import Debug from "debug";
+import MarkdownIt from "markdown-it";
 import { TaskLogLevel } from "../commands/task";
 const debug = Debug("reporters:stream");
 
@@ -53,10 +54,12 @@ body {
 `;
 export class HTMLStreamer extends Reporter {
   stream: Writable;
+  markdown: MarkdownIt;
 
   constructor(stream: Writable) {
     super();
     this.stream = stream;
+    this.markdown = new MarkdownIt();
 
     this.stream.write(`<!DOCTYPE html><html><head>
     <style>${CSS_STYLES}</style>
@@ -71,6 +74,7 @@ export class HTMLStreamer extends Reporter {
       <div class="w3-border">
         <div class="w3-green" id="progress" style="height:24px;width:0%"></div>
       </div>
+      <div id="result">...</div>
       <pre id="logs"></pre>
     </div>\n`);
   }
@@ -193,5 +197,9 @@ export class HTMLStreamer extends Reporter {
   };
   protected onAttachment = async (filePath: string) => {
     this.addLog("info", `File attached: ${filePath}`);
+  };
+
+  protected onResult = async (mrkdwnMessage: string) => {
+    this.updateElement("result", this.markdown.render(mrkdwnMessage));
   };
 }

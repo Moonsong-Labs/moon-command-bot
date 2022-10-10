@@ -27,6 +27,7 @@ export class SlackReporter extends Reporter {
   private messageBlocks: {
     header?: KnownBlock;
     progress?: KnownBlock;
+    result?: KnownBlock;
   };
 
   constructor(
@@ -134,7 +135,14 @@ export class SlackReporter extends Reporter {
       text: { type: "mrkdwn", text: `\`/moonbot ${this.cmdLine}\`` },
     });
 
+    if (this.messageBlocks.result) {
+      blocks.push(this.messageBlocks.result);
+    }
+
     if (this.logs.length > 0) {
+      if (this.messageBlocks.result) {
+        blocks.push({ type: "divider" });
+      }
       blocks.push({
         type: "section",
         text: { type: "mrkdwn", text: " :newspaper: *Logs* :newspaper:" },
@@ -207,6 +215,7 @@ export class SlackReporter extends Reporter {
       ],
     };
   };
+
   protected onFailure = async (message?: string) => {
     this.status = "failure";
     this.messageBlocks.progress = {
@@ -227,5 +236,17 @@ export class SlackReporter extends Reporter {
 
   protected onEnd = async () => {
     this.updateMessage();
+  };
+
+  protected onResult = async (mrkdwnMessage: string) => {
+    this.messageBlocks.result = {
+      type: "context",
+      elements: [
+        {
+          text: `${mrkdwnMessage}`,
+          type: "mrkdwn",
+        },
+      ],
+    };
   };
 }

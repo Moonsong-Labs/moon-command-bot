@@ -1,10 +1,10 @@
 import { ApiPromise } from "@polkadot/api";
-import { Task, TaskArguments } from "../task";
+import { Task } from "../task";
 import { moment } from "moment-parseplus";
 
 import Debug from "debug";
-import { computeBlockForMoment, getBlockDate } from "../../actions/block-time";
-import { promiseConcurrent } from "moonbeam-tools";
+import { getBlockDate } from "../../actions/block-time";
+import { callInterpreter, renderCallInterpretation } from "../../utils/call";
 const debug = Debug("commands:Governance");
 
 export interface Network {
@@ -39,39 +39,92 @@ export class GovernanceTask extends Task {
   public async execute() {
     //
     let progress = 0;
-    for (const { api, name } of this.parameters.networkApis) {
-      const blockHash = await api.rpc.chain.getBlockHash();
-      const apiAt = await api.at(blockHash);
+    const networkReferendums = await Promise.all(
+      this.parameters.networkApis.map(async ({ api, name }) => {
+        const header = await api.rpc.chain.getHeader();
+        const blockNumber = header.number.toNumber();
+        const blockHash = header.hash.toString();
 
-      const referendums = await api.derive.democracy.referendums();
-      if (referendums.length > 0) {
-        this.emit(
-          "log",
-          "info",
-          `${name.toString().padStart(this.namePadding, " ")}: ${
-            referendums.length
-          } referendums`
-        );
-      }
+        const referendums = await api.derive.democracy.referendums();
+        if (referendums.length > 0) {
+          this.emit(
+            "log",
+            "info",
+            `${name.toString().padStart(this.namePadding, " ")}: ${
+              referendums.length
+            } referendums`
+          );
+        }
+        const messages = await Promise.all(
+          referendums.map(async (referendum) => {
+            const preimageHash = referendum.imageHash;
+            const polkadotPrefix = name == "Moonbase Alpha" ? "moonbase" : name;
 
-      for (const referendum of referendums) {
-        const preimageHash = referendum.imageHash;
-        this.emit(
-          "log",
-          "info",
-          `  [${referendum.index
-            .toString()
-            .padStart(4, " ")}]: ${preimageHash} (${
-            referendum.isPassing ? `passing` : `failing`
-          })`
+            const enactBlock = referendum.status.end
+              .add(referendum.status.delay)
+              .toNumber();
+            const endBlock = referendum.status.end.isubn(1).toNumber();
+            const preimage = await api.query.democracy.preimages(preimageHash);
+            let imageText = ""; // TODO refactor
+            let subText = null; // TODO refactor
+            if (preimage && preimage.isSome && preimage.unwrap().isAvailable) {
+              const callData = await callInterpreter(
+                api,
+                await api.registry.createType(
+                  "Call",
+                  preimage.unwrap().asAvailable.data.toU8a(true)
+                )
+              );
+              imageText = callData.text;
+              subText =
+                callData.depth == 0 ? null : renderCallInterpretation(callData);
+            } else {
+              imageText = preimageHash.toString();
+            }
+
+            return {
+              end: endBlock,
+              message: `[${referendum.index
+                .toString()
+                .padStart(
+                  4,
+                  " "
+                )}](https://${polkadotPrefix}.polkassembly.network/referendum/${
+                referendum.index
+              }) - \`${subText ? preimageHash : imageText}\` (${
+                referendum.isPassing ? `passing` : `failing`
+              } - ${moment
+                .duration(
+                  moment((await getBlockDate(api, endBlock)).date).diff(
+                    moment()
+                  )
+                )
+                .humanize()})${subText ? `  \n${subText}` : ""}`,
+            };
+          })
         );
-      }
-      this.emit(
-        "progress",
-        Math.round((progress += 100 / this.parameters.networkApis.length))
-      );
-    }
+        this.emit(
+          "progress",
+          Math.round((progress += 100 / this.parameters.networkApis.length))
+        );
+        return { name, messages };
+      })
+    );
+    this.emit(
+      "result",
+      networkReferendums
+        .filter(({ messages }) => messages.length > 0)
+        .map(
+          ({ name, messages }) =>
+            `**${name}**  \n${messages
+              .sort((a, b) => a.end - b.end)
+              .map(({ message }) => message)
+              .join("  \n")}`
+        )
+        .join("\n\n")
+    );
   }
+
   async cancel() {
     this.cancelled = true;
   }
