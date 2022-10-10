@@ -18,6 +18,7 @@ export class GithubReporter extends Reporter {
   private link?: string;
   private message: string;
   private cmdLine: string;
+  private result: string;
   private logs: string[];
   private progressBar: ProgressBar;
 
@@ -88,6 +89,7 @@ export class GithubReporter extends Reporter {
     }**: ${this.progressBar.render(this.progress)}${
       this.stepMessage ? ` - ${this.stepMessage}` : ``
     }
+    ${this.result ? `${this.result}\n` : ""}
     ${
       this.logs.length == 0
         ? ``
@@ -154,5 +156,9 @@ ${this.logs.join("  \n")}
 
   protected onAttachment = async (filePath: string) => {
     this.attachments.push(filePath);
+  };
+
+  protected onResult = async (mrkdwnMessage: string) => {
+    this.result = mrkdwnMessage;
   };
 }
