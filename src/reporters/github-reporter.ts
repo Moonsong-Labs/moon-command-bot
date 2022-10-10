@@ -105,7 +105,6 @@ ${this.logs.join("  \n")}
 
   private async updateReply() {
     this.buildMessage();
-    console.log(this.message);
     const octoRest = (await this.octoRepo.getOctokit()).rest;
     await this.pQueue.add(async () =>
       octoRest.issues.updateComment(
