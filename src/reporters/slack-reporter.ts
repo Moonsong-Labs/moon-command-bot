@@ -254,7 +254,7 @@ export class SlackReporter extends Reporter {
                     .replace(/(0x[0-9a-zA-Z]{16})[0-9a-zA-Z]{48}/g, "$1...")
                     .replace(/^[ \t]+/gm, (x) => {
                       //replace leading whitespaces
-                      return new Array(x.length + 1).join("\xe2\x80\x84");
+                      return new Array(x.length + 1).join("\u2003");
                     })
                 )
                 .join("\n")
