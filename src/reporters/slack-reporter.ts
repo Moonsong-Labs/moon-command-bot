@@ -249,6 +249,7 @@ export class SlackReporter extends Reporter {
             slackifyMarkdown(mrkdwnMessage)
               .split("\n")
               .map((s) => s.replace(/\\$/g, " "))
+              .map((s) => s.replace(":green_circle:", ":large_green_circle:"))
               .map((s) =>
                 s.replace(/(0x[0-9a-zA-Z]{16})[0-9a-zA-Z]{48}/g, "$1...")
               )
