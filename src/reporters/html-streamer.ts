@@ -3,6 +3,7 @@ import { Writable } from "node:stream";
 import Debug from "debug";
 import MarkdownIt from "markdown-it";
 import { TaskLogLevel } from "../commands/task";
+import slackifyMarkdown from "slackify-markdown";
 const debug = Debug("reporters:stream");
 
 const CSS_STYLES = `
@@ -200,6 +201,8 @@ export class HTMLStreamer extends Reporter {
   };
 
   protected onResult = async (mrkdwnMessage: string) => {
+    console.log(mrkdwnMessage);
+    console.log(slackifyMarkdown(mrkdwnMessage));
     this.updateElement("result", this.markdown.render(mrkdwnMessage));
   };
 }

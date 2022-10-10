@@ -21,14 +21,15 @@ export interface CallInterpretation {
 
 export function renderCallInterpretation(
   callData: CallInterpretation,
-  separator = "\n"
+  separator = "\n",
+  depth = 0
 ): string {
   return [
-    `- ${"".padStart(callData.depth * 2, " ")}${callData.text}`,
+    `${"".padStart(depth * 4, " ")}- ${callData.text}`,
     ...callData.subCalls.map((call) =>
-      renderCallInterpretation(call, separator)
+      renderCallInterpretation(call, separator, depth + 1)
     ),
-  ].join(" \n");
+  ].join("\n");
 }
 
 export async function callInterpreter(

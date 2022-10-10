@@ -5,7 +5,6 @@ import PQueue from "p-queue";
 import { TaskLogLevel } from "../commands/task";
 import { ProgressBar } from "./utils";
 import slackifyMarkdown from "slackify-markdown";
-import Markdown from "markdown-it";
 const debug = Debug("reporters:slack");
 
 export class SlackReporter extends Reporter {
@@ -244,7 +243,10 @@ export class SlackReporter extends Reporter {
     this.messageBlocks.result = {
       type: "context",
       elements: [
-        { text: `${slackifyMarkdown(mrkdwnMessage)}`, type: "mrkdwn" },
+        {
+          text: `${slackifyMarkdown(mrkdwnMessage).replace("\\ ", " ")}`,
+          type: "mrkdwn",
+        },
       ],
     };
   };

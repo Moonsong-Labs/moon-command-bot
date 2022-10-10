@@ -99,7 +99,7 @@ export class GovernanceTask extends Task {
                     moment()
                   )
                 )
-                .humanize()})${subText ? `  \n${subText}` : ""}`,
+                .humanize()})${subText ? `\n${subText}` : ""}`,
             };
           })
         );
@@ -116,7 +116,7 @@ export class GovernanceTask extends Task {
         .filter(({ messages }) => messages.length > 0)
         .map(
           ({ name, messages }) =>
-            `**${name}**  \n${messages
+            `#### ${name}  \n${messages
               .sort((a, b) => a.end - b.end)
               .map(({ message }) => message)
               .join("  \n")}`
