@@ -4,6 +4,7 @@ import Debug from "debug";
 import MarkdownIt from "markdown-it";
 import MarkdownItEmoji from "markdown-it-emoji";
 import { TaskLogLevel } from "../commands/task";
+import slackifyMarkdown from "slackify-markdown";
 
 const debug = Debug("reporters:stream");
 
