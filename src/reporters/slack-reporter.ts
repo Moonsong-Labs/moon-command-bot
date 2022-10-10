@@ -254,7 +254,7 @@ export class SlackReporter extends Reporter {
                   .replace(":green_circle:", ":large_green_circle:")
                   .replace(/^[ \t]+/gm, (x) => {
                     //replace leading whitespaces
-                    return new Array(x.length + 1).join(" ");
+                    return new Array(x.length + 1).join(". ");
                   })
               )
               .map((s) =>
