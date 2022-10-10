@@ -46,9 +46,7 @@ export class GovernanceFactory extends TaskFactory {
       throw new Error(`Unknown networks: ${args.positional.join(", ")}`);
     }
 
-    return new GovernanceTask(this.keyword, id, {
-      networkApis: this.networkApis,
-    });
+    return new GovernanceTask(this.keyword, id, { networkApis: networks });
   }
 
   destroy() {}
