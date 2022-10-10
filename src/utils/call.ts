@@ -19,15 +19,15 @@ export interface CallInterpretation {
   subCalls: CallInterpretation[];
 }
 
-export function renderCallInterpretation(
+export function renderCallMarkdown(
   callData: CallInterpretation,
   separator = "\n",
   depth = 0
 ): string {
   return [
-    `${"".padStart(depth * 8, " ")} ${callData.text}`,
+    `${"".padStart(depth * 6, " ")}⤷\`${callData.text}\``,
     ...callData.subCalls.map((call) =>
-      renderCallInterpretation(call, separator, depth + 1)
+      renderCallMarkdown(call, separator, depth + 1)
     ),
   ].join("\n");
 }
