@@ -5,6 +5,7 @@ import PQueue from "p-queue";
 import { TaskLogLevel } from "../commands/task";
 import { ProgressBar } from "./utils";
 import MarkdownSlack from "slack-markdown-it";
+import Markdown from "markdown-it";
 const debug = Debug("reporters:slack");
 
 export class SlackReporter extends Reporter {
@@ -18,7 +19,7 @@ export class SlackReporter extends Reporter {
   private cmdLine: string;
   private link: string;
   private progressBar: ProgressBar;
-  markdown: MarkdownSlack;
+  markdown: Markdown;
 
   // Pqueue is used to limit to 1 concurrent request (avoid race condition on slack side)
   private pQueue: PQueue;
@@ -44,7 +45,8 @@ export class SlackReporter extends Reporter {
     this.pQueue = new PQueue({ concurrency: 1 });
     this.client = client;
     this.ackFallback = ackFallback;
-    this.markdown = new MarkdownSlack();
+    this.markdown = new Markdown();
+    this.markdown.use(MarkdownSlack);
     this.channelId = channelId;
     this.attachments = [];
     this.logs = [];
