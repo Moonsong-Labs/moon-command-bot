@@ -34,7 +34,11 @@ export class GovernanceFactory extends TaskFactory {
     const networks =
       args.positional.length > 0
         ? args.positional
-            .map((name) => this.networkApis.find((n) => n.name == name))
+            .map((name) =>
+              this.networkApis.find(
+                (n) => n.name.toLocaleLowerCase() == name.toLocaleLowerCase()
+              )
+            )
             .filter((network) => !!network)
         : [...this.networkApis];
 
