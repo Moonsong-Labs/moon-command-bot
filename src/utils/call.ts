@@ -25,7 +25,7 @@ export function renderCallInterpretation(
   depth = 0
 ): string {
   return [
-    `${"".padStart(depth * 4, " ")}- ${callData.text}`,
+    `${"".padStart(depth * 8, " ")} ${callData.text}`,
     ...callData.subCalls.map((call) =>
       renderCallInterpretation(call, separator, depth + 1)
     ),

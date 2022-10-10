@@ -205,6 +205,19 @@ export class HTMLStreamer extends Reporter {
   };
 
   protected onResult = async (mrkdwnMessage: string) => {
-    this.updateElement("result", this.markdown.render(mrkdwnMessage));
+    this.updateElement(
+      "result",
+      this.markdown.render(
+        mrkdwnMessage
+          .split("\n")
+          .map((s) =>
+            s.replace(/^[ \t]+/gm, (x) => {
+              //replace leading whitespaces
+              return new Array(x.length + 1).join("&nbsp;");
+            })
+          )
+          .join("\n")
+      )
+    );
   };
 }

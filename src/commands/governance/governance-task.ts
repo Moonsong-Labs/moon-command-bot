@@ -66,7 +66,11 @@ export class GovernanceTask extends Task {
               );
               imageText = callData.text;
               subText =
-                callData.depth == 0 ? null : renderCallInterpretation(callData);
+                callData.depth == 0
+                  ? null
+                  : callData.subCalls
+                      .map((c) => renderCallInterpretation(c, "  \n", 1))
+                      .join("  \n");
             } else {
               imageText = preimageHash.toString();
             }
@@ -90,9 +94,7 @@ export class GovernanceTask extends Task {
                   " "
                 )}](https://${polkadotPrefix}.polkassembly.network/referendum/${
                 referendum.index
-              }) - \`${
-                subText ? preimageHash : imageText
-              }\` ( :thumbsup:${humanizeNumber(
+              }) - \`${imageText}\` ( :thumbsup:${humanizeNumber(
                 yes.toNumber()
               )} vs ${humanizeNumber(no.toNumber())}:thumbsdown: | ${moment
                 .duration(
@@ -100,7 +102,7 @@ export class GovernanceTask extends Task {
                     moment()
                   )
                 )
-                .humanize()} left)${subText ? `\n${subText}` : ""}`,
+                .humanize()} left)${subText ? `  \n${subText}` : ""}`,
             };
           })
         );
