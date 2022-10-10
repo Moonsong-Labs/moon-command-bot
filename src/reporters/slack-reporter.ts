@@ -244,7 +244,11 @@ export class SlackReporter extends Reporter {
       type: "context",
       elements: [
         {
-          text: `${slackifyMarkdown(mrkdwnMessage).replace("\\ ", " ")}`,
+          text: `${ // Fixes a bug with slackify adding \ for double white space
+            slackifyMarkdown(mrkdwnMessage)
+              .split("\n")
+              .map((s) => s.replace(/\\$/g, " "))
+              .join("\n")}`,
           type: "mrkdwn",
         },
       ],

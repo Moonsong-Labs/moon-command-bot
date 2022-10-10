@@ -46,15 +46,6 @@ export class GovernanceTask extends Task {
         const blockHash = header.hash.toString();
 
         const referendums = await api.derive.democracy.referendums();
-        if (referendums.length > 0) {
-          this.emit(
-            "log",
-            "info",
-            `${name.toString().padStart(this.namePadding, " ")}: ${
-              referendums.length
-            } referendums`
-          );
-        }
         const messages = await Promise.all(
           referendums.map(async (referendum) => {
             const preimageHash = referendum.imageHash;

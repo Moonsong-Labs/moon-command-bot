@@ -53,6 +53,7 @@ body {
 }
 
 `;
+
 export class HTMLStreamer extends Reporter {
   stream: Writable;
   markdown: MarkdownIt;
@@ -201,8 +202,6 @@ export class HTMLStreamer extends Reporter {
   };
 
   protected onResult = async (mrkdwnMessage: string) => {
-    console.log(mrkdwnMessage);
-    console.log(slackifyMarkdown(mrkdwnMessage));
     this.updateElement("result", this.markdown.render(mrkdwnMessage));
   };
 }
