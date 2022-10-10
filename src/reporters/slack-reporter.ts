@@ -248,8 +248,15 @@ export class SlackReporter extends Reporter {
             // Fixes a bug with slackify adding \ for double white space
             slackifyMarkdown(mrkdwnMessage)
               .split("\n")
-              .map((s) => s.replace(/\\$/g, " "))
-              .map((s) => s.replace(":green_circle:", ":large_green_circle:"))
+              .map((s) =>
+                s
+                  .replace(/\\$/g, " ")
+                  .replace(":green_circle:", ":large_green_circle:")
+                  .replace(/^[ \t]+/gm, (x) => {
+                    //replace leading whitespaces
+                    return new Array(x.length + 1).join("&nbsp;");
+                  })
+              )
               .map((s) =>
                 s.replace(/(0x[0-9a-zA-Z]{16})[0-9a-zA-Z]{48}/g, "$1...")
               )
