@@ -213,7 +213,7 @@ export class HTMLStreamer extends Reporter {
           .map((s) =>
             s.replace(/^[ \t]+/gm, (x) => {
               //replace leading whitespaces
-              return new Array(x.length + 1).join("&nbsp;");
+              return new Array(x.length + 1).join("\u2003");
             })
           )
           .join("\n")

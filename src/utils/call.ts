@@ -25,7 +25,7 @@ export function renderCallMarkdown(
   depth = 0
 ): string {
   return [
-    `${"".padStart(depth * 6, " ")}⤷\`${callData.text}\``,
+    `${"".padStart(depth * 6, " ")}⤷ \`${callData.text}\``,
     ...callData.subCalls.map((call) =>
       renderCallMarkdown(call, separator, depth + 1)
     ),
