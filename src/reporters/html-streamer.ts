@@ -2,8 +2,9 @@ import { Reporter } from "./reporter";
 import { Writable } from "node:stream";
 import Debug from "debug";
 import MarkdownIt from "markdown-it";
+import MarkdownItEmoji from "markdown-it-emoji";
 import { TaskLogLevel } from "../commands/task";
-import slackifyMarkdown from "slackify-markdown";
+
 const debug = Debug("reporters:stream");
 
 const CSS_STYLES = `
@@ -62,6 +63,7 @@ export class HTMLStreamer extends Reporter {
     super();
     this.stream = stream;
     this.markdown = new MarkdownIt();
+    this.markdown.use(MarkdownItEmoji);
 
     this.stream.write(`<!DOCTYPE html><html><head>
     <style>${CSS_STYLES}</style>

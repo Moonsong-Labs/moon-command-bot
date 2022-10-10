@@ -1,6 +1,8 @@
+import { BN, BN_TEN } from "@polkadot/util";
 import { ApiPromise } from "@polkadot/api";
 import { Task } from "../task";
 import { moment } from "moment-parseplus";
+import humanizeNumber from "humanize-number";
 
 import Debug from "debug";
 import { getBlockDate } from "../../actions/block-time";
@@ -19,7 +21,6 @@ export type GovernanceTaskParameters = {
 export class GovernanceTask extends Task {
   public readonly name: string;
   private cancelled: boolean;
-  private namePadding: number;
   private parameters: GovernanceTaskParameters;
 
   constructor(
@@ -31,9 +32,6 @@ export class GovernanceTask extends Task {
     this.parameters = parameters;
     this.cancelled = false;
     this.name = `Governance information`;
-    this.namePadding = Math.max(
-      ...this.parameters.networkApis.map(({ name }) => name.length)
-    );
   }
 
   public async execute() {
@@ -73,24 +71,36 @@ export class GovernanceTask extends Task {
               imageText = preimageHash.toString();
             }
 
+            const yes = referendum.votedAye.div(
+              BN_TEN.pow(new BN(api.registry.chainDecimals[0]))
+            );
+
+            const no = referendum.votedNay.div(
+              BN_TEN.pow(new BN(api.registry.chainDecimals[0]))
+            );
+
             return {
               end: endBlock,
-              message: `[${referendum.index
+              message: `${
+                referendum.isPassing ? `:green_circle:` : `:red_circle:`
+              } [${referendum.index
                 .toString()
                 .padStart(
                   4,
                   " "
                 )}](https://${polkadotPrefix}.polkassembly.network/referendum/${
                 referendum.index
-              }) - \`${subText ? preimageHash : imageText}\` (${
-                referendum.isPassing ? `passing` : `failing`
-              } - ${moment
+              }) - \`${
+                subText ? preimageHash : imageText
+              }\` ( :thumbsup:${humanizeNumber(
+                yes.toNumber()
+              )} vs ${humanizeNumber(no.toNumber())}:thumbsdown: | ${moment
                 .duration(
                   moment((await getBlockDate(api, endBlock)).date).diff(
                     moment()
                   )
                 )
-                .humanize()})${subText ? `\n${subText}` : ""}`,
+                .humanize()} left)${subText ? `\n${subText}` : ""}`,
             };
           })
         );
