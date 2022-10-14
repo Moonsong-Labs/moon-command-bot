@@ -88,7 +88,7 @@ export class Commander implements Service {
         .join("\n\n")
     );
     reporter.instantReport({
-      message: Object.values(this.factories)
+      mrkdwnMessage: Object.values(this.factories)
         .map((factory) => factory.help())
         .join("\n\n"),
     });

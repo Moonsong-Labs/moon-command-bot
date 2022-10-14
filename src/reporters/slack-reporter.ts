@@ -88,10 +88,50 @@ export class SlackReporter extends Reporter {
   public instantReport = async (report: InstantReport) => {
     this.status = "failure";
     const message = `${report.error ? `Error: ${report.error}\n` : "\n"}${
-      report.message ? `Message: ${report.message}` : ""
+      report.mrkdwnMessage || ""
     }`;
     try {
-      await this.pQueue.add(() => this.ackFallback(message));
+      await this.pQueue.add(() =>
+        this.ackFallback({
+          text: message,
+          blocks: [
+            {
+              type: "context",
+              elements: [
+                {
+                  text: `${
+                    // Fixes a bug with slackify adding \ for double white space
+                    slackifyMarkdown(
+                      report.mrkdwnMessage
+                        .split("\n")
+                        .map((s) =>
+                          s
+                            .replace(
+                              /(0x[0-9a-zA-Z]{16})[0-9a-zA-Z]{48}/g,
+                              "$1..."
+                            )
+                            .replace(/^[ \t]+/gm, (x) => {
+                              //replace leading whitespaces
+                              return new Array(x.length + 1).join("\u2003");
+                            })
+                        )
+                        .join("\n")
+                    )
+                      .split("\n")
+                      .map((s) =>
+                        s
+                          .replace(/\\$/g, " ")
+                          .replace(":green_circle:", ":large_green_circle:")
+                      )
+                      .join("\n")
+                  }`,
+                  type: "mrkdwn",
+                },
+              ],
+            },
+          ],
+        } as any)
+      );
     } catch (e) {
       debug(`Error ack : ${e.message}`);
     }

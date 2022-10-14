@@ -85,7 +85,7 @@ export class HTMLStreamer extends Reporter {
   }
 
   public instantReport = async (report: InstantReport) => {
-    debug(`Report: ${report.error} / ${report.message}`);
+    debug(`Report: ${report.error} / ${report.mrkdwnMessage}`);
     this.updateElement("status", "created");
     this.updateElement("title", report.error ? "Invalid task" : "Report");
     this.updateElement("task-id", `N/A`);
@@ -105,11 +105,11 @@ export class HTMLStreamer extends Reporter {
        }");`
     );
     this.updateProgress(100);
-    if (report.message) {
+    if (report.mrkdwnMessage) {
       this.updateElement(
         "result",
         this.markdown.render(
-          report.message
+          report.mrkdwnMessage
             .split("\n")
             .map((s) =>
               s.replace(/^[ \t]+/gm, (x) => {

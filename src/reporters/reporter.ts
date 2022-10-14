@@ -3,7 +3,7 @@ import Debug from "debug";
 const debug = Debug("reporters:command");
 
 export interface InstantReport {
-  message?: string;
+  mrkdwnMessage?: string;
   error?: string;
 }
 export abstract class Reporter {

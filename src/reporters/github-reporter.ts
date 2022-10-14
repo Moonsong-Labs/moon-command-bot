@@ -45,7 +45,7 @@ export class GithubReporter extends Reporter {
 
   public instantReport = async (report: InstantReport) => {
     this.message = `${report.error ? `Error: ${report.error}\n` : "\n"}${
-      report.message ? `Message: ${report.message}` : ""
+      report.mrkdwnMessage ? `Message: ${report.mrkdwnMessage}` : ""
     }`;
   };
 
