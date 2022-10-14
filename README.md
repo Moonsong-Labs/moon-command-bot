@@ -64,6 +64,9 @@ Ex: http://localhost:8000/api/sample
 
 (Support for JSON format will come soon)
 
+## Help
+
+Users can query the help for all the commands by providing the keyword "help"
 ## Commands
 
 There are multiple commands in the [commands](src/commands) folder.
