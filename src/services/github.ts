@@ -61,15 +61,14 @@ export class GithubService implements Service {
   }
 
   async checkAuth() {
-    debug(`${new Date()} before ${this.jwt && moment(this.jwt.expiresAt)}`);
     if (
       this.jwt &&
       moment(new Date()).add(60, "seconds").isBefore(moment(this.jwt.expiresAt))
     ) {
       return;
     }
+    debug(`${new Date()} before ${this.jwt && moment(this.jwt.expiresAt)}: Generating new token`);
 
-    console.log(`Generating new token for ${this.owner}/${this.repo}`);
     this.jwt = await this.app({
       type: "installation",
       installationId: this.installationId,

@@ -1,3 +1,4 @@
+import { ForkTestFactoryConfig } from "src/commands/fork-test/fork-test-factory";
 import { GovernanceFactoryConfig } from "src/commands/governance/governance-factory";
 import { BenchmarkFactoryConfig } from "../commands/benchmark/benchmark-factory";
 import { BlockTimeFactoryConfig } from "../commands/block-time/block-time-factory";
@@ -13,6 +14,7 @@ export interface BotConfig {
     benchmark?: BenchmarkFactoryConfig;
     "block-time"?: BlockTimeFactoryConfig;
     governance?: GovernanceFactoryConfig;
+    "fork-test"?: ForkTestFactoryConfig;
   };
   hooks: {
     http?: HttpHookConfig;

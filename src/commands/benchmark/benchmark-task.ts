@@ -1,5 +1,5 @@
 import {
-  benchmarkRuntime,
+  executeBenchmark,
   BenchRunConfig,
   Command,
 } from "../../actions/benchmark";
@@ -79,7 +79,7 @@ export class BenchmarkTask extends Task {
 
     const config: BenchRunConfig = { repoDirectory, branch, command };
     this.emit("progress", 10, `Running benchmark (~10min)`);
-    const { outputFile, logs, benchCommand } = await benchmarkRuntime(config);
+    const { outputFile, logs, benchCommand } = await executeBenchmark(config);
     // const { outputFile, logs, benchCommand } = {
     //   outputFile: "./pallets/author-mapping/src/weights.rs",
     //   logs: "none",

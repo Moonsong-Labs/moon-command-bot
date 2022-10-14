@@ -50,10 +50,10 @@ export class GithubHook extends Hook {
 
   async onWebhook(reply: ({ body }) => void, payload: IssueCommentEvent) {
     let commentText = payload.comment.body;
-    debug(`Received text: ${commentText}`);
     if (!commentText.startsWith("/")) {
       return;
     }
+    debug(`Received text: ${commentText}`);
 
     const cmdLine = commentText.slice(1).split("\n")[0];
     const parsedData = await yargParser.parse(cmdLine);

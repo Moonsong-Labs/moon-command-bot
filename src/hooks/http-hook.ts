@@ -1,4 +1,5 @@
 import { Express, Request, Response } from "express";
+import parseurl from "parseurl";
 import { Hook } from "./hook";
 import Debug from "debug";
 import { HTMLStreamer } from "../reporters/html-streamer";
@@ -25,7 +26,8 @@ export class HttpHook extends Hook {
 
   private handleRequest = (req: Request, res: Response) => {
     try {
-      const parameters = req.originalUrl
+      const parsedUrl = parseurl(req);
+      const parameters = parsedUrl.pathname
         .slice(`${this.config.urlPrefix}/`.length)
         .split(/\//);
       if (parameters.length < 1) {
@@ -40,8 +42,15 @@ export class HttpHook extends Hook {
       } as TaskArguments;
 
       const cmdLine = req.url;
+      console.log(args);
 
-      debug(`Received keyword: ${keyword} [${parameters.join(" ")}]`);
+      debug(
+        `Received keyword: ${keyword} [${parameters.join(" ")}](${Object.keys(
+          args.options
+        )
+          .map((key) => `--${key}: ${args.options[key]}`)
+          .join(" ")})`
+      );
 
       // Prepare headers for streamed html
       res.setHeader("Content-Type", "text/html; charset=utf-8");

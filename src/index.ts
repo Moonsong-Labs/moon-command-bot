@@ -13,6 +13,7 @@ import { TaskFactory } from "./commands/factory";
 import { GithubHook } from "./hooks/github-hook";
 import { BotConfig } from "./configs/config-types";
 import { GovernanceFactory } from "./commands/governance/governance-factory";
+import { ForkTestFactory } from "./commands/fork-test/fork-test-factory";
 
 let isTerminating = false;
 
@@ -87,6 +88,12 @@ export async function start(env: BotConfig) {
     console.log(`-      Enable command: ${chalk.green("benchmark")}`);
     taskFactories.push(
       new BenchmarkFactory("benchmark", env.commands.benchmark)
+    );
+  }
+  if (env.commands["fork-test"]) {
+    console.log(`-      Enable command: ${chalk.green("fork-test")}`);
+    taskFactories.push(
+      new ForkTestFactory("fork-test", env.commands["fork-test"])
     );
   }
 

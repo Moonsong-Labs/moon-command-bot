@@ -7,7 +7,7 @@ const prodConfig: BotConfig = {
       gitFolder: `${process.cwd()}/repos`,
       repos: {
         main: {
-          name: "offical",
+          name: "official",
           owner: process.env.MOONBEAM_REPO_OWNER,
           repo: process.env.MOONBEAM_REPO_NAME,
           installationId: process.env.MOONBEAM_INSTALLATION_ID,
@@ -45,6 +45,22 @@ const prodConfig: BotConfig = {
         { network: "moonriver" },
         { network: "moonbeam" },
       ],
+    },
+    "fork-test": {
+      dataFolder: `/tmp/fork-test`,
+      gitFolder: `${process.cwd()}/repos`,
+      repo: {
+        name: "moonbeam",
+        owner: process.env.MOONBEAM_REPO_OWNER,
+        repo: process.env.MOONBEAM_REPO_NAME,
+        installationId: process.env.MOONBEAM_INSTALLATION_ID,
+        auth: {
+          appId: process.env.MOONBEAM_APP_ID,
+          clientId: process.env.MOONBEAM_CLIENT_ID,
+          clientSecret: process.env.MOONBEAM_CLIENT_SECRET,
+          privateKey: process.env.MOONBEAM_PRIVATE_KEY,
+        },
+      },
     },
   },
   history: {

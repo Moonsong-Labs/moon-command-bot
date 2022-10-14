@@ -2,13 +2,14 @@ import { Writable } from "node:stream";
 import child_process from "child_process";
 import { promisify } from "node:util";
 import Debug from "debug";
+import { ChildProcessWithoutNullStreams } from "node:child_process";
 const debug = Debug("actions:runner");
 const execAsync = promisify(child_process.exec);
 
-// really just a context for running processes from a shell...
+// Execute process and return the output
 export async function runTask(
   cmd: string,
-  { cwd }: { cwd: string },
+  { cwd, env }: { cwd: string; env?: NodeJS.ProcessEnv },
   title?: string
 ): Promise<string> {
   debug(
@@ -17,9 +18,32 @@ export async function runTask(
     }Running task on directory ${process.cwd()}: ${cmd}\n`
   );
   try {
-    const result = await execAsync(cmd, { cwd });
-
+    const result = await execAsync(cmd, { cwd, env });
     return result.stdout;
+  } catch (error) {
+    console.log(error);
+    debug(
+      `Caught exception in command execution. Error[${error.status}] ${error.message}\n`
+    );
+    throw error;
+  }
+}
+
+
+// Execute process return the emitter instantly, without wait
+export async function spawnTask(
+  cmd: string,
+  { cwd, env }: { cwd: string; env?: NodeJS.ProcessEnv },
+  title?: string
+): Promise<ChildProcessWithoutNullStreams> {
+  debug(
+    `${
+      title ? `Title: ${title}\n` : ""
+    }Running task on directory ${process.cwd()}: ${cmd}\n`
+  );
+  try {
+    const process =  child_process.spawn(cmd, { cwd, env });
+    return process;
   } catch (error) {
     console.log(error);
     debug(

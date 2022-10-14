@@ -32,13 +32,30 @@ const prodConfig: BotConfig = {
         },
       },
     },
+    "fork-test": {
+      dataFolder: `/tmp/fork-test`,
+      gitFolder: `${process.cwd()}/repos`,
+      repo: {
+        name: "moonbeam",
+        owner: process.env.MOONBEAM_REPO_OWNER,
+        repo: process.env.MOONBEAM_REPO_NAME,
+        installationId: process.env.MOONBEAM_INSTALLATION_ID,
+        auth: {
+          appId: process.env.MOONBEAM_APP_ID,
+          clientId: process.env.MOONBEAM_CLIENT_ID,
+          clientSecret: process.env.MOONBEAM_CLIENT_SECRET,
+          privateKey: process.env.MOONBEAM_PRIVATE_KEY,
+        },
+      },
+    },
   },
-  history: { serverUrl: "http://localhost:8000", limit: 1000, urlPrefix: "/history/test/tasks" },
+  history: {
+    serverUrl: "http://localhost:8000",
+    limit: 1000,
+    urlPrefix: "/history/test/tasks",
+  },
   hooks: { http: { urlPrefix: "/api" } },
-  server: {
-    
-    listener: { port: 8000, hostname: "0.0.0.0" },
-  },
+  server: { listener: { port: 8000, hostname: "0.0.0.0" } },
 };
 
 export default prodConfig;

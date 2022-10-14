@@ -4,8 +4,6 @@ import { runTask } from "./runner";
 import Debug from "debug";
 const debug = Debug("actions:benchmark");
 
-const cwd = process.cwd();
-
 // const cargoRun = "cargo run --features=runtime-benchmarks --bin moonbeam -- ";
 const cargoRun = "cargo run ";
 
@@ -126,7 +124,7 @@ export function validateCommand(type: string, name: string): Command {
 }
 
 
-export async function benchmarkRuntime(config: BenchRunConfig) {
+export async function executeBenchmark(config: BenchRunConfig) {
   debug(`Starting benchmark of ${config.command.type}...`);
 
   const runConfig = commandRunConfigs[config.command.type];

@@ -1,6 +1,6 @@
 {
   "name": "moon-command-bot",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "description": "Bot to handle command for Moonbeam",
   "author": "Crystalin <alan@purestake.com>",
