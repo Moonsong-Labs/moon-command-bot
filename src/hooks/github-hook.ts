@@ -24,7 +24,7 @@ export interface GithubHookConfig {
   repo: GithubServiceConfig;
 }
 
-const yargParser = yargs();
+const yargParser = yargs().help(false);
 
 export class GithubHook extends Hook {
   private readonly repo: GithubService;

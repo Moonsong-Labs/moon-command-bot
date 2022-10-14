@@ -24,7 +24,7 @@ export interface SlackHookConfig {
   };
 }
 
-const yargParser = yargs();
+const yargParser = yargs().help(false);
 
 export class SlackHook extends Hook {
   private readonly app: App;
