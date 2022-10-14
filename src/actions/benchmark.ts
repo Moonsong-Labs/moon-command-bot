@@ -158,7 +158,6 @@ export async function executeBenchmark(config: BenchRunConfig) {
     throw new Error(`Missing output file parameter`);
   }
 
-  debug(``);
   debug(`Running benchmark, expected output: ${outputFile}`);
   const logs = await runTask(
     completeBenchCommand,

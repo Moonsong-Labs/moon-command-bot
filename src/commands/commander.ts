@@ -1,7 +1,7 @@
 import { Service } from "../services/service";
 import { TaskArguments, TaskFactory } from "./factory";
 import pQueue from "p-queue";
-import { Task, TaskEventEmitter } from "./task";
+import { Task } from "./task";
 
 import Debug from "debug";
 import { Reporter } from "../reporters/reporter";
@@ -82,6 +82,7 @@ export class Commander implements Service {
     reporter: Reporter
   ) {
     debug(
+      `Help: `,
       Object.values(this.factories)
         .map((factory) => factory.help())
         .join("\n\n")
