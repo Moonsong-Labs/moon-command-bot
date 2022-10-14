@@ -44,11 +44,11 @@ To support Github Webhook, you need to setup a webhook in your repo. This is don
 
 Webhook settings: https://github.com/purestake/moonbeam/settings/hooks
 `Add Webhook`, here are the suggested parameters:
- 
-* Payload Url: https://your-domain-or-ip.com/github (the `/github` should match the urlPrefix in your config: `/github` by default)
-* Content Type: `application/json`
-* Secret: `<generated-very-long-random-string>` (Copy the secret into your [configuration](#configuration) probot => secret)
-* Select **individual events** => `Issue comments`
+
+- Payload Url: https://your-domain-or-ip.com/github (the `/github` should match the urlPrefix in your config: `/github` by default)
+- Content Type: `application/json`
+- Secret: `<generated-very-long-random-string>` (Copy the secret into your [configuration](#configuration) probot => secret)
+- Select **individual events** => `Issue comments`
 
 ### Slack
 
@@ -74,6 +74,7 @@ Here are some of them:
 - Sample: Triggers a timer of X (default: 10) seconds (for testing purposes)
 - Benchmark: Triggers build and benchmark of moonbeam binary (requires a dedicated/powerful hardware)
 - block-time: Returns the expected/past block number at a given time and vice et versa.
+  It requires substrate tools/libraries like cargo (see https://docs.substrate.io/install/linux/)
 - fork-test: Execute a fork-test locally (requires `jq` to be installed).
 
 # Configuration
