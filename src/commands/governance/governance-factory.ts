@@ -11,7 +11,7 @@ export type GovernanceTaskArguments = TaskArguments & {
   options: {};
 };
 
-const HELP = `## Command \`governance\`
+const HELP = `# Command governance
 
 Returns on-going proposals on all networks
 

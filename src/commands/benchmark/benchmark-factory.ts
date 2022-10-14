@@ -20,15 +20,15 @@ export type BenchmarkTaskArguments = TaskArguments & {
   };
 };
 
-const HELP = `## Command \`benchmark\`
+const HELP = `# Command benchmark
 
 Execute cargo benchmark and opens a pull request with
 the new weight.
 
 usage: \`benchmark <type> <pallet> [--pullNumber xxx]\`
 
-* type: Type of benchmark to execute (ex: \`runtime\`)
-* pallet: Name of the pallet (ex: \`author-mapping\`)
+* type: Type of benchmark to execute (ex: "*runtime*")
+* pallet: Name of the pallet (ex: "*author-mapping*")
 * *pullNumber: Pull request number to execute the benchmark on
 
 exemple: \`benchmark runtime parachain-staking --pullNumber 1854\`

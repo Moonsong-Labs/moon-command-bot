@@ -19,7 +19,7 @@ export type ForkTestTaskArguments = TaskArguments & {
   };
 };
 
-const HELP = `## Command \`fork-test\`
+const HELP = `# Command fork-test
 
 Execute fork tests, using exported state of **existing network**,
 modifying it to be run locally and executing **runtime upgrade**

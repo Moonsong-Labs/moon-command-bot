@@ -12,7 +12,7 @@ export type SampleTaskArguments = TaskArguments & {
 };
 
 const MAX_DELAY = 15;
-const HELP = `## Command \`sample\`
+const HELP = `# Command sample
 
 Simple command running a timer. Doesn't perform any
 action. Is meant for **testing purposes**

@@ -81,16 +81,10 @@ export class Commander implements Service {
     { keyword, cmdLine, args }: CommandData,
     reporter: Reporter
   ) {
-    debug(
-      `Help: `,
-      Object.values(this.factories)
-        .map((factory) => factory.help())
-        .join("\n\n")
-    );
     reporter.instantReport({
       mrkdwnMessage: Object.values(this.factories)
         .map((factory) => factory.help())
-        .join("\n\n"),
+        .join("\n\n_________________\n\n"),
     });
   }
 

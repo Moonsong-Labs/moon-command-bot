@@ -11,14 +11,14 @@ export type BlockTimeTaskArguments = TaskArguments & {
   options: {};
 };
 
-const HELP = `## Command \`block-time\`
+const HELP = `# Command block-time
 
 Computes time information for a given block or time.
 
 usage: \`block-time <time_or_block>\`
 
 * time_or_block: The future or past block number or time to inspect.
-time can be given in relative or absolute formats like. \`in 5 days\` or \`November 5th 2023\`
+time can be given in relative or absolute formats like. "*in 5 days*" or "*November 5th 2023*"
 
 exemple: \`block-time in 1 month\` or \`block-time 1259344\`
 `;
