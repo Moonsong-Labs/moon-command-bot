@@ -1,7 +1,7 @@
 import { Service } from "../services/service";
-import { TaskFactory } from "./factory";
+import { TaskArguments, TaskFactory } from "./factory";
 import pQueue from "p-queue";
-import { Task, TaskArguments } from "./task";
+import { Task, TaskEventEmitter } from "./task";
 
 import Debug from "debug";
 import { Reporter } from "../reporters/reporter";
@@ -57,13 +57,18 @@ export class Commander implements Service {
       for (const hook of hooks) {
         hook.on("command", (data, reporter: Reporter) => {
           try {
+            if (data.keyword.toLocaleLowerCase() == "help") {
+              this.handleHelp(data, reporter);
+              return;
+            }
+
             const task = this.handleCommand(data);
             reporter.attachTask(task);
             if (historyService) {
               historyService.recordTask(task);
             }
           } catch (e) {
-            reporter.reportInvalidTask(e.message);
+            reporter.instantReport({ error: e.message });
             console.error(`[Commander] Error: ${e.message}`);
           }
         });
@@ -72,10 +77,27 @@ export class Commander implements Service {
     });
   }
 
+  public handleHelp(
+    { keyword, cmdLine, args }: CommandData,
+    reporter: Reporter
+  ) {
+    debug(
+      Object.values(this.factories)
+        .map((factory) => factory.help())
+        .join("\n\n")
+    );
+    reporter.instantReport({
+      message: Object.values(this.factories)
+        .map((factory) => factory.help())
+        .join("\n\n"),
+    });
+  }
+
   public handleCommand({ keyword, cmdLine, args }: CommandData): Task {
     if (this.isDestroying) {
       throw new Error("Service ending");
     }
+
     const factory = this.factories[keyword];
     if (!factory) {
       console.error(`Invalid command: ${keyword}`);

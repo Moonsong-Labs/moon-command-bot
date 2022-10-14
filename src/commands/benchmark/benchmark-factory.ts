@@ -1,8 +1,7 @@
 import { GithubService, GithubServiceConfig } from "../../services/github";
-import { TaskFactory } from "../factory";
+import { TaskArguments, TaskFactory } from "../factory";
 import { BenchmarkRepos, BenchmarkTask } from "./benchmark-task";
 import { validateCommand } from "../../actions/benchmark";
-import { TaskArguments } from "../task";
 
 export class BenchmarkFactoryConfig {
   gitFolder: string;
@@ -21,6 +20,20 @@ export type BenchmarkTaskArguments = TaskArguments & {
   };
 };
 
+const HELP = `## Command \`benchmark\`
+
+Execute cargo benchmark and opens a pull request with
+the new weight.
+
+usage: \`benchmark <type> <pallet> [--pullNumber xxx]\`
+
+* type: Type of benchmark to execute (ex: \`runtime\`)
+* pallet: Name of the pallet (ex: \`author-mapping\`)
+* *pullNumber: Pull request number to execute the benchmark on
+
+exemple: \`benchmark runtime parachain-staking --pullNumber 1854\`
+`;
+
 export class BenchmarkFactory extends TaskFactory {
   private readonly repos: BenchmarkRepos;
   private readonly gitFolder: string;
@@ -35,6 +48,10 @@ export class BenchmarkFactory extends TaskFactory {
     this.isReady = Promise.all(
       Object.values(this.repos).map((repo) => repo.isReady)
     ).then(() => this);
+  }
+
+  public help() {
+    return HELP;
   }
 
   public createTask(id: number, parameters: BenchmarkTaskArguments) {

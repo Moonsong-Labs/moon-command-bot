@@ -1,4 +1,4 @@
-import { Reporter } from "./reporter";
+import { InstantReport, Reporter } from "./reporter";
 import { WebClient, KnownBlock } from "@slack/web-api";
 import Debug from "debug";
 import PQueue from "p-queue";
@@ -85,12 +85,13 @@ export class SlackReporter extends Reporter {
     }
   }
 
-  public reportInvalidTask = async (message?: string) => {
+  public instantReport = async (report: InstantReport) => {
     this.status = "failure";
-    this.title = message || `Invalid task`;
-    this.messageText = message || `Invalid task`;
+    const message = `${report.error ? `Error: ${report.error}\n` : "\n"}${
+      report.message ? `Message: ${report.message}` : ""
+    }`;
     try {
-      await this.pQueue.add(() => this.ackFallback(this.messageText));
+      await this.pQueue.add(() => this.ackFallback(message));
     } catch (e) {
       debug(`Error ack : ${e.message}`);
     }

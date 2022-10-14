@@ -1,4 +1,4 @@
-import { Reporter } from "./reporter";
+import { InstantReport, Reporter } from "./reporter";
 import { Writable } from "node:stream";
 import Debug from "debug";
 import MarkdownIt from "markdown-it";
@@ -84,23 +84,44 @@ export class HTMLStreamer extends Reporter {
     </div>\n`);
   }
 
-  public reportInvalidTask = async (message?: string) => {
-    debug(`Invalid task`);
+  public instantReport = async (report: InstantReport) => {
+    debug(`Report: ${report.error} / ${report.message}`);
     this.updateElement("status", "created");
-    this.updateElement("title", "Invalid task");
+    this.updateElement("title", report.error ? "Invalid task" : "Report");
     this.updateElement("task-id", `N/A`);
     this.writeScript(
       `document.getElementById("task-id").classList.remove("w3-grey", "w3-yellow");
-       document.getElementById("task-id").classList.add("w3-red");`
+       document.getElementById("task-id").classList.add("${
+         report.error ? "w3-red" : "w3-blue"
+       }");`
     );
-    if (message) {
-      this.addLog("error", message);
+    if (report.error) {
+      this.addLog("error", report.error);
     }
     this.writeScript(
       `document.getElementById("progress").classList.remove("w3-grey", "w3-yellow");
-       document.getElementById("progress").classList.add("w3-red");`
+       document.getElementById("progress").classList.add("${
+         report.error ? "w3-red" : "w3-blue"
+       }");`
     );
-    this.updateProgress(100, message);
+    this.updateProgress(100);
+    if (report.message) {
+      this.updateElement(
+        "result",
+        this.markdown.render(
+          report.message
+            .split("\n")
+            .map((s) =>
+              s.replace(/^[ \t]+/gm, (x) => {
+                //replace leading whitespaces
+                return new Array(x.length + 1).join("\u2003");
+              })
+            )
+            .join("\n")
+        )
+      );
+    }
+
     this.stream.end(`</body></html>`);
   };
 
@@ -123,7 +144,10 @@ export class HTMLStreamer extends Reporter {
 
   private updateElement(element: string, value: string) {
     this.writeScript(
-      `document.getElementById("${element}").innerHTML = \`${value}\``
+      `document.getElementById("${element}").innerHTML = \`${value.replaceAll(
+        "`",
+        "\\`"
+      )}\``
     );
   }
 
@@ -131,7 +155,7 @@ export class HTMLStreamer extends Reporter {
     this.writeScript(
       `{const log = document.createElement("div"); 
        log.classList.add('log');
-       log.innerHTML = \`${new Date().toISOString()} ${level.toUpperCase()} ${message.replace(
+       log.innerHTML = \`${new Date().toISOString()} ${level.toUpperCase()} ${message.replaceAll(
         "`",
         '"'
       )}\`;

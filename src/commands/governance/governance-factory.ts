@@ -1,8 +1,6 @@
-import { TaskFactory } from "../factory";
+import { TaskArguments, TaskFactory } from "../factory";
 import { GovernanceTask, Network } from "./governance-task";
 import { Argv as ApiNetworkConfig, getApiFor } from "moonbeam-tools";
-import { TaskArguments } from "../task";
-export { Argv as ApiNetworkConfig } from "moonbeam-tools";
 
 export interface GovernanceFactoryConfig {
   networks: ApiNetworkConfig[];
@@ -12,6 +10,13 @@ export type GovernanceTaskArguments = TaskArguments & {
   positional: string[];
   options: {};
 };
+
+const HELP = `## Command \`governance\`
+
+Returns on-going proposals on all networks
+
+usage: \`governance\`
+`;
 
 export class GovernanceFactory extends TaskFactory {
   private networkApis: Network[];
@@ -28,6 +33,10 @@ export class GovernanceFactory extends TaskFactory {
       );
       return this;
     });
+  }
+
+  public help() {
+    return HELP;
   }
 
   public createTask(id: number, args: GovernanceTaskArguments) {

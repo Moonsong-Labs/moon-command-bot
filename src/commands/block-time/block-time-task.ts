@@ -1,5 +1,5 @@
 import { ApiPromise } from "@polkadot/api";
-import { Task, TaskArguments } from "../task";
+import { Task } from "../task";
 import { moment } from "moment-parseplus";
 
 import Debug from "debug";

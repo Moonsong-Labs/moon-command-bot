@@ -3,7 +3,7 @@ import parseurl from "parseurl";
 import { Hook } from "./hook";
 import Debug from "debug";
 import { HTMLStreamer } from "../reporters/html-streamer";
-import { TaskArguments } from "../commands/task";
+import { TaskArguments } from "../commands/factory";
 const debug = Debug("hooks:http");
 
 export interface HttpHookConfig {

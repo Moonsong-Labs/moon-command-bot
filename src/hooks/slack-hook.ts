@@ -11,7 +11,7 @@ import { Hook } from "./hook";
 import Debug from "debug";
 import yargs from "yargs";
 import { SlackReporter } from "../reporters/slack-reporter";
-import { TaskArguments } from "../commands/task";
+import { TaskArguments } from "../commands/factory";
 const debug = Debug("hooks:slack");
 
 export interface SlackHookConfig {

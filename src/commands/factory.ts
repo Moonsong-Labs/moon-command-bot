@@ -1,6 +1,12 @@
 import type { Service } from "../services/service";
-import { Task, TaskArguments } from "./task";
+import { Task } from "./task";
 
+export interface TaskArguments {
+  // The positional arguments given
+  positional: any[];
+  // The optional arguments given
+  options: { [name: string]: any };
+}
 
 export abstract class TaskFactory implements Service {
   public readonly id: number;
@@ -13,6 +19,7 @@ export abstract class TaskFactory implements Service {
   }
 
   public abstract createTask(id: number, args: TaskArguments): Task;
+  public abstract help(): string;
 
   abstract destroy();
 }

@@ -1,4 +1,4 @@
-import { Reporter } from "./reporter";
+import { InstantReport, Reporter } from "./reporter";
 import Debug from "debug";
 import PQueue from "p-queue";
 import { TaskLogLevel } from "../commands/task";
@@ -42,6 +42,12 @@ export class GithubReporter extends Reporter {
       width: 20,
     });
   }
+
+  public instantReport = async (report: InstantReport) => {
+    this.message = `${report.error ? `Error: ${report.error}\n` : "\n"}${
+      report.message ? `Message: ${report.message}` : ""
+    }`;
+  };
 
   public reportInvalidTask = async (message?: string) => {
     this.message = message || `Invalid task`;

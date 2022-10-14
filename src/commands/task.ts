@@ -31,12 +31,6 @@ export type TaskEvents = {
 export class TaskEventEmitter extends (EventEmitter as new () => TypedEmitter<TaskEvents>) {}
 export type TaskEventEmitterType = typeof TaskEventEmitter;
 
-export interface TaskArguments {
-  // The positional arguments given
-  positional: any[];
-  // The optional arguments given
-  options: { [name: string]: any };
-}
 
 export abstract class Task extends TaskEventEmitter {
   public readonly id: number;

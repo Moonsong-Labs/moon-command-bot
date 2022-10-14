@@ -1,9 +1,7 @@
 import { GithubService, GithubServiceConfig } from "../../services/github";
-import { TaskFactory } from "../factory";
+import { TaskArguments, TaskFactory } from "../factory";
 import { ForkTestTask } from "./fork-test-task";
-import { validateCommand } from "../../actions/benchmark";
-import { TaskArguments } from "../task";
-import { NetworkName } from "src/actions/fork-test";
+import { NetworkName } from "../../actions/fork-test";
 
 export class ForkTestFactoryConfig {
   gitFolder: string;
@@ -21,6 +19,23 @@ export type ForkTestTaskArguments = TaskArguments & {
   };
 };
 
+const HELP = `## Command \`fork-test\`
+
+Execute fork tests, using exported state of **existing network**,
+modifying it to be run locally and executing **runtime upgrade**
+plus **smoke tests**.
+
+**Warning**: This takes around 30 minutes.
+
+usage: \`fork-test <network> [--branch ref]\`
+
+* network: Which network state to use
+("moonbeam", "moonriver" or "alphanet")
+* ref: Github ref to run the fork tests on
+
+exemple: \`fork-test moonbeam --branch runtime-1900\`
+`;
+
 export class ForkTestFactory extends TaskFactory {
   private readonly config: ForkTestFactoryConfig;
   private readonly repo: GithubService;
@@ -29,7 +44,13 @@ export class ForkTestFactory extends TaskFactory {
     super(keyword);
     this.config = config;
     this.repo = new GithubService(config.repo);
-    this.isReady = this.repo.isReady.then(() => this);
+    this.isReady = this.repo.isReady.then(async () => {
+      return this;
+    });
+  }
+
+  public help() {
+    return HELP;
   }
 
   public createTask(id: number, parameters: ForkTestTaskArguments) {

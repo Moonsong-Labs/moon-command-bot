@@ -71,7 +71,7 @@ export class TaskHistory implements Service {
       const task = this.taskRing.find(({ task }) => task && task.id == taskId);
       if (!task) {
         const reporter = new HTMLStreamer(res);
-        reporter.reportInvalidTask("Not found");
+        reporter.instantReport({ error: "Not found" });
         return;
       }
       task.stream.rewind().pipe(res);

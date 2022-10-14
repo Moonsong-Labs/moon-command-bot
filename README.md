@@ -74,6 +74,7 @@ Here are some of them:
 - Sample: Triggers a timer of X (default: 10) seconds (for testing purposes)
 - Benchmark: Triggers build and benchmark of moonbeam binary (requires a dedicated/powerful hardware)
 - block-time: Returns the expected/past block number at a given time and vice et versa.
+- fork-test: Execute a fork-test locally (requires `jq` to be installed).
 
 # Configuration
 

@@ -2,6 +2,10 @@ import { Task, TaskLogLevel } from "../commands/task";
 import Debug from "debug";
 const debug = Debug("reporters:command");
 
+export interface InstantReport {
+  message?: string;
+  error?: string;
+}
 export abstract class Reporter {
   protected task: Task;
 
@@ -19,7 +23,8 @@ export abstract class Reporter {
     this.task.on("end", this.onEnd);
   }
 
-  public abstract reportInvalidTask: (message?: string) => Promise<void>;
+  // Function used when there is no task to associate or for error
+  public abstract instantReport: (report: InstantReport) => Promise<void>;
 
   protected onCreate = async (cmdLine: string, link?: string) => {
     debug(`  - [${this.task.keyword}-${this.task.id}] Created: ${link}`);
@@ -53,6 +58,8 @@ export abstract class Reporter {
     debug(`  - [${this.task.keyword}-${this.task.id}] End`);
   };
   protected onResult = async (mrkdwnMessage: string) => {
-    debug(`  - [${this.task.keyword}-${this.task.id}] Result: ${mrkdwnMessage}`);
+    debug(
+      `  - [${this.task.keyword}-${this.task.id}] Result: ${mrkdwnMessage}`
+    );
   };
 }

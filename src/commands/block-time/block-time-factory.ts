@@ -1,14 +1,27 @@
-import { TaskFactory } from "../factory";
+import { TaskArguments, TaskFactory } from "../factory";
 import { BlockTimeTask, Network } from "./block-time-task";
 import { Argv as ApiNetworkConfig, getApiFor } from "moonbeam-tools";
-import { TaskArguments } from "../task";
-export { Argv as ApiNetworkConfig } from "moonbeam-tools";
 
 export interface BlockTimeFactoryConfig {
   networks: ApiNetworkConfig[];
 }
 
-export type BlockTimeTaskArguments = TaskArguments;
+export type BlockTimeTaskArguments = TaskArguments & {
+  positional: [target: string];
+  options: {};
+};
+
+const HELP = `## Command \`block-time\`
+
+Computes time information for a given block or time.
+
+usage: \`block-time <time_or_block>\`
+
+* time_or_block: The future or past block number or time to inspect.
+time can be given in relative or absolute formats like. \`in 5 days\` or \`November 5th 2023\`
+
+exemple: \`block-time in 1 month\` or \`block-time 1259344\`
+`;
 
 export class BlockTimeFactory extends TaskFactory {
   private networkApis: Network[];
@@ -25,6 +38,10 @@ export class BlockTimeFactory extends TaskFactory {
       );
       return this;
     });
+  }
+
+  public help() {
+    return HELP;
   }
 
   public createTask(id: number, args: BlockTimeTaskArguments) {

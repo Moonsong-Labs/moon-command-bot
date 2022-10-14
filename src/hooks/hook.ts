@@ -1,6 +1,5 @@
 import EventEmitter from "node:events";
 import type TypedEmitter from "typed-emitter";
-import { Writable } from "node:stream";
 import type { CommandData } from "../commands/commander";
 import { Reporter } from "../reporters/reporter";
 import { Service } from "../services/service";
