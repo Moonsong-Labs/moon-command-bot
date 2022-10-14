@@ -30,7 +30,7 @@ export async function executeForkTest(config: ForkTestConfig) {
   }
 
   const result = await runTask(
-    `./scripts/run-fork-test.sh | tee ${config.dataFolder}/run.log`,
+    `./scripts/run-fork-test.sh 2>&1 | tee ${config.dataFolder}/run.log`,
     {
       cwd: config.repoDirectory,
       env: {
