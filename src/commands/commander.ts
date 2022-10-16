@@ -107,7 +107,7 @@ export class Commander implements Service {
             }
           } catch (e) {
             reporter.instantReport({ time: Date.now() }, { error: e.message });
-            console.error(`[Commander] Error: ${e.message}`);
+            console.error(`[Commander] Error: ${e.message}\n${e.stack}`);
           }
         });
       }

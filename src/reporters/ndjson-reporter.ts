@@ -43,7 +43,7 @@ export class NDJsonStreamer implements TaskReporterInterface {
     context: EventContext,
     report: InstantReport
   ) => {
-    this.ndjson.write({ name: "instant", parameters: { context, report } });
+    this.ndjson.write({ name: "instant", parameters: [context, report] });
     this.ndjson.end();
   };
 }

@@ -104,7 +104,7 @@ export class ProxyService implements Service {
             redirectedTask.emit(name, ...parameters);
           }
         } catch (e) {
-          debug(`ERROR proxying command: ${e.message}`);
+          debug(`ERROR proxying command: ${e.message}\n${e.stack}`);
         }
       }
     } catch (e) {
