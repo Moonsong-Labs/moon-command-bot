@@ -6,6 +6,8 @@ import { GithubService } from "../services/github";
 import { ProgressBar } from "./utils";
 const debug = Debug("reporters:github");
 
+// It is limited to 65_000 so we remove 5k as overhead
+const GITHUB_MAX_LENGTH = 65_000 - 5_000;
 export class GithubReporter extends Reporter {
   private octoRepo: GithubService;
   private issueNumber: number;
@@ -177,7 +179,7 @@ ${this.logs.join("  \n")}
     level: TaskLogLevel,
     message: string
   ) => {
-    this.logs.push(`${level}: ${message}`);
+    this.logs.push(`${level}: ${message.slice(-GITHUB_MAX_LENGTH)}`);
     return this.updateReply();
   };
 
@@ -186,6 +188,6 @@ ${this.logs.join("  \n")}
   };
 
   protected onResult = async (context: EventContext, mrkdwnMessage: string) => {
-    this.result = mrkdwnMessage;
+    this.result = mrkdwnMessage.slice(-GITHUB_MAX_LENGTH);
   };
 }

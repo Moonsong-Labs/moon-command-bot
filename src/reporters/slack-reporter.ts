@@ -7,6 +7,8 @@ import { ProgressBar } from "./utils";
 import slackifyMarkdown from "slackify-markdown";
 const debug = Debug("reporters:slack");
 
+// It is limited to 40_000 so we remove 5k as overhead
+const SLACK_MAX_LENGTH = 40_000 - 5_000;
 export class SlackReporter extends Reporter {
   private client: WebClient;
   private ackFallback: (body?: string) => void;
@@ -255,7 +257,9 @@ export class SlackReporter extends Reporter {
     level: TaskLogLevel,
     message: string
   ) => {
-    this.logs.push(`${level.toUpperCase()}: ${message}`);
+    this.logs.push(
+      `${level.toUpperCase()}: ${message.slice(-SLACK_MAX_LENGTH)}`
+    );
   };
 
   protected onAttachment = async (context: EventContext, filePath: string) => {
@@ -308,6 +312,7 @@ export class SlackReporter extends Reporter {
             // Fixes a bug with slackify adding \ for double white space
             slackifyMarkdown(
               mrkdwnMessage
+                .slice(-SLACK_MAX_LENGTH)
                 .split("\n")
                 .map((s) =>
                   s
