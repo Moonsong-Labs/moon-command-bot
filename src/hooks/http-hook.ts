@@ -44,9 +44,9 @@ export class HttpHook extends Hook {
       const cmdLine = req.url;
 
       debug(
-        `Received keyword: ${keyword} [${parameters.join(" ")}](${Object.keys(
-          args.options
-        )
+        `Received keyword: ${keyword} [${args.positional.join(
+          " "
+        )}](${Object.keys(args.options)
           .map((key) => `--${key}: ${args.options[key]}`)
           .join(" ")})`
       );

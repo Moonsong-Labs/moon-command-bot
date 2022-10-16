@@ -75,15 +75,16 @@ export class JsonHook extends Hook {
         return;
       }
 
-      const { keyword } = jsonBody;
+      const { keyword, cmdLine } = jsonBody;
       const args: TaskArguments = {
-        positional: Array.isArray(jsonBody.positional)
-          ? jsonBody.positional
+        positional: Array.isArray(jsonBody.args && jsonBody.args.positional)
+          ? jsonBody.args.positional
           : [],
-        options: typeof jsonBody.options == "object" ? jsonBody.options : {},
+        options:
+          jsonBody.args && typeof jsonBody.args.options == "object"
+            ? jsonBody.args.options
+            : {},
       };
-
-      const cmdLine = JSON.stringify(req.body);
 
       debug(
         `Received keyword: ${keyword} [${args.positional.join(
