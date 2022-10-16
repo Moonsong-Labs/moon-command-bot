@@ -68,7 +68,7 @@ export class SlackReporter extends Reporter {
       });
       await this.messageTsPromise;
     } catch (e) {
-      debug(`Error posting message: ${e.message}`);
+      debug(`Error posting message: ${e.message}\n${e.stack}`);
     }
   }
 
@@ -82,7 +82,7 @@ export class SlackReporter extends Reporter {
         });
       });
     } catch (e) {
-      debug(`Error updating message: ${e.message}`);
+      debug(`Error updating message: ${e.message}\n${e.stack}`);
     }
   }
 
@@ -137,7 +137,7 @@ export class SlackReporter extends Reporter {
         } as any)
       );
     } catch (e) {
-      debug(`Error ack : ${e.message}`);
+      debug(`Error ack : ${e.message}\n${e.stack}`);
     }
   };
 

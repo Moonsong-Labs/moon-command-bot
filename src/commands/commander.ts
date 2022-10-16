@@ -207,10 +207,10 @@ export class Commander implements Service {
             task.removeAllListeners();
           })
           .catch((e) => {
-            console.log(`queue failed: ${e.message}`);
+            console.log(`queue failed: ${e.message}\n${e.stack}`);
           });
       } catch (e) {
-        console.trace(`Panic !!: ${e.message}`);
+        console.trace(`Panic !!: ${e.message}\n${e.stack}`);
       }
     }, 0);
     return task;

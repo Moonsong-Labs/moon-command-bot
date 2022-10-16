@@ -99,7 +99,7 @@ export class JsonHook extends Hook {
       res.setHeader("Transfer-Encoding", "chunked");
       this.emit("command", { keyword, cmdLine, args }, new NDJsonStreamer(res));
     } catch (e) {
-      console.error(`Error: ${e.message}`);
+      debug(`Error: ${e.message}\n${e.stack}`);
       res.end(`Error: ${e.message}`);
     }
   };
