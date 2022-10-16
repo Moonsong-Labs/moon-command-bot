@@ -93,7 +93,7 @@ export class ProxyService implements Service {
             if (isCreated) {
               debug(`Warning: Instant report after task being created !!`);
             }
-            reporter.instantReport.call(reporter, ...parameters);
+            reporter.instantReport(parameters[0], parameters[1]);
           } else {
             if (name == "create") {
               isCreated = true;
