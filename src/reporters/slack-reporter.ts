@@ -98,7 +98,7 @@ export class SlackReporter extends Reporter {
       await this.pQueue.add(() =>
         this.ackFallback({
           text: message,
-          blocks: [
+          blocks: report.mrkdwnMessage && [
             {
               type: "context",
               elements: [
