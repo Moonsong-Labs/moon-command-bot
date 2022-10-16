@@ -1,4 +1,5 @@
 import { Service } from "./service";
+import { fetch, Agent } from "undici";
 import ndjsonStream from "can-ndjson-stream";
 import jwt from "jsonwebtoken";
 import { TaskReporterInterface } from "../reporters/reporter";
@@ -61,6 +62,10 @@ export class ProxyService implements Service {
         method: "POST", // or 'PUT'
         headers,
         body: JSON.stringify(commandData),
+        dispatcher: new Agent({
+          keepAliveTimeout: 3_600_000,
+          keepAliveMaxTimeout: 3_600_000,
+        }),
       });
       const stream = ndjsonStream(response.body);
       let isCreated = false;
