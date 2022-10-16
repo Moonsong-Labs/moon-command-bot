@@ -6,6 +6,8 @@ import { BotConfig } from "./src/configs/config-types";
 
 PUBLIC_URL=https://my-benchmark-server.com
 
+BENCHMARK_PROXY_SECRET="just-another-secret"
+
 MOONBEAM_PRIVATE_KEY="`cat github-private-key.pem`"
 MOONBEAM_REPO_OWNER=purestake
 MOONBEAM_REPO_NAME=moonbeam
@@ -72,7 +74,12 @@ const config: BotConfig = {
       },
     },
   },
-  hooks: { json: { urlPrefix: "/json", auth: { type: "none" } } },
+  hooks: {
+    json: {
+      urlPrefix: "/json",
+      auth: { type: "secret", secret: process.env.BENCHMARK_PROXY_SECRET },
+    },
+  },
   server: {
     serverUrl: process.env.PUBLIC_URL,
     listener: { port: 8000, hostname: "0.0.0.0" },

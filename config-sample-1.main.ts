@@ -11,7 +11,7 @@ import { BotConfig } from "./src/configs/config-types";
 PUBLIC_URL=https://my-server.com
 
 BENCHMARK_PROXY_URL=https://my-benchmark-server.com/json
-BENCHMARK_PRIVATE_KEY="`cat benchmark-private-key.pem`"
+BENCHMARK_PROXY_SECRET="just-another-secret"
 
 GITHUB_PRIVATE_KEY="`cat github-private-key.pem`"
 GITHUB_REPO_OWNER=purestake
@@ -33,7 +33,7 @@ const config: BotConfig = {
   proxies: [
     {
       url: process.env.BENCHMARK_PROXY_URL,
-      auth: { type: "key", privateKey: process.env.BENCHMARK_PRIVATE_KEY },
+      auth: { type: "secret", secret: process.env.BENCHMARK_PROXY_SECRET },
       commands: ["benchmark", "fork-test"],
     },
   ],
