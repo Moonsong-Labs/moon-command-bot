@@ -1,11 +1,33 @@
-import { BotConfig } from "./config-types";
+import { BotConfig } from "./src/configs/config-types";
 
-const prodConfig: BotConfig = {
-  commander: { concurrentTasks: 1 },
+/*
+# Using environment variable for configuration
+# (Those are fake values, you need to change them)
+
+PUBLIC_URL=https://my-benchmark-server.com
+
+MOONBEAM_PRIVATE_KEY="`cat github-private-key.pem`"
+MOONBEAM_REPO_OWNER=purestake
+MOONBEAM_REPO_NAME=moonbeam
+MOONBEAM_INSTALLATION_ID=50032980
+MOONBEAM_APP_ID=944744
+MOONBEAM_CLIENT_ID=Iv1.4d9020ef212334021
+MOONBEAM_CLIENT_SECRET=40fd329421a9356b9030291f030e312067120ef2
+
+FORK_PRIVATE_KEY="`cat my-github-fork-private-key.pem`"
+FORK_REPO_OWNER=my-fork
+FORK_REPO_NAME=moonbeam
+FORK_INSTALLATION_ID=50032980
+FORK_APP_ID=944744
+FORK_CLIENT_ID=Iv1.4d9020ef212334021
+FORK_CLIENT_SECRET=40fd329421a9356b9030291f030e312067120ef2
+*/
+
+const config: BotConfig = {
+  commander: { concurrentTasks: 1 }, // benchmark should not run concurrently
   commands: {
-    sample: { seconds: 10 },
     benchmark: {
-      gitFolder: `${process.cwd()}/repos`,
+      gitFolder: `${process.cwd()}/repos`, // Where we will clone the repos
       repos: {
         main: {
           name: "official",
@@ -34,7 +56,7 @@ const prodConfig: BotConfig = {
       },
     },
     "fork-test": {
-      dataFolder: `/tmp/fork-test`,
+      dataFolder: `/tmp/fork-test`, // Tmp folder to store fork-test data (> 30Gb needed)
       gitFolder: `${process.cwd()}/repos`,
       repo: {
         name: "moonbeam",
@@ -50,18 +72,11 @@ const prodConfig: BotConfig = {
       },
     },
   },
-  history: { limit: 1000 },
-  hooks: {
-    http: { urlPrefix: "/api" },
-    json: {
-      urlPrefix: "/json",
-      auth: { type: "secret", secret: "<change-me-for-production-usage>" },
-    },
-  },
+  hooks: { json: { urlPrefix: "/json", auth: { type: "none" } } },
   server: {
-    serverUrl: "http://localhost:8000",
+    serverUrl: process.env.PUBLIC_URL,
     listener: { port: 8000, hostname: "0.0.0.0" },
   },
 };
 
-export default prodConfig;
+export default config;

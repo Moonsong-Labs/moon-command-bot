@@ -7,7 +7,7 @@ import yargs from "yargs";
 import { GithubService, GithubServiceConfig } from "../services/github";
 import { IssueCommentEvent } from "@octokit/webhooks-types";
 import { GithubReporter } from "../reporters/github-reporter";
-import { TaskArguments } from "src/commands/factory";
+import { TaskArguments } from "../commands/factory";
 const debug = Debug("hooks:github");
 
 interface ProbotConfig {

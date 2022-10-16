@@ -1,7 +1,7 @@
 import { InstantReport, Reporter } from "./reporter";
 import Debug from "debug";
 import PQueue from "p-queue";
-import { TaskLogLevel } from "../commands/task";
+import { EventContext, TaskLogLevel } from "../commands/task";
 import { GithubService } from "../services/github";
 import { ProgressBar } from "./utils";
 const debug = Debug("reporters:github");
@@ -16,6 +16,8 @@ export class GithubReporter extends Reporter {
   private progress: number;
   private stepMessage?: string;
   private link?: string;
+  private taskId: number;
+  private taskName: string;
   private message: string;
   private cmdLine: string;
   private result: string;
@@ -43,7 +45,10 @@ export class GithubReporter extends Reporter {
     });
   }
 
-  public instantReport = async (report: InstantReport) => {
+  public instantReport = async (
+    context: EventContext,
+    report: InstantReport
+  ) => {
     this.message = `${report.error ? `Error: ${report.error}\n` : "\n"}${
       report.mrkdwnMessage ? `Message: ${report.mrkdwnMessage}` : ""
     }`;
@@ -85,8 +90,8 @@ export class GithubReporter extends Reporter {
         ? ":white_circle:"
         : ":yellow_circle:";
 
-    this.message = `${emoji} *${this.task.name}* ${
-      this.link ? `| [report](${this.link})` : `[${this.task.id.toString()}]`
+    this.message = `${emoji} *${this.taskName}* ${
+      this.link ? `| [report](${this.link})` : `[${this.taskId.toString()}]`
     }
 \`${this.cmdLine}\`
 
@@ -128,8 +133,16 @@ ${this.logs.join("  \n")}
     return this.updateReply();
   };
 
-  protected onCreate = async (cmdLine: string, link?: string) => {
+  protected onCreate = async (
+    context: EventContext,
+    name: string,
+    id: number,
+    cmdLine: string,
+    link?: string
+  ) => {
     this.cmdLine = cmdLine;
+    this.taskName = name;
+    this.taskId = id;
     this.link = link;
     this.reply();
   };
@@ -138,33 +151,41 @@ ${this.logs.join("  \n")}
     this.stepMessage = `Starting`;
     return this.updateReply();
   };
-  protected onSuccess = async (message?: string) => {
+  protected onSuccess = async (context: EventContext, message?: string) => {
     this.status = "success";
     this.stepMessage = message;
     this.progress = 100;
     return this.updateReply();
   };
-  protected onFailure = async (message?: string) => {
+  protected onFailure = async (context: EventContext, message?: string) => {
     this.status = "failure";
     this.stepMessage = message;
     return this.updateReply();
   };
-  protected onProgress = async (percent: number, message?: string) => {
+  protected onProgress = async (
+    context: EventContext,
+    percent: number,
+    message?: string
+  ) => {
     this.status = "progress";
     this.stepMessage = message;
     this.progress = percent;
     return this.updateReply();
   };
-  protected onLog = async (level: TaskLogLevel, message: string) => {
+  protected onLog = async (
+    context: EventContext,
+    level: TaskLogLevel,
+    message: string
+  ) => {
     this.logs.push(`${level}: ${message}`);
     return this.updateReply();
   };
 
-  protected onAttachment = async (filePath: string) => {
+  protected onAttachment = async (context: EventContext, filePath: string) => {
     this.attachments.push(filePath);
   };
 
-  protected onResult = async (mrkdwnMessage: string) => {
+  protected onResult = async (context: EventContext, mrkdwnMessage: string) => {
     this.result = mrkdwnMessage;
   };
 }

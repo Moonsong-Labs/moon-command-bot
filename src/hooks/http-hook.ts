@@ -42,7 +42,6 @@ export class HttpHook extends Hook {
       } as TaskArguments;
 
       const cmdLine = req.url;
-      console.log(args);
 
       debug(
         `Received keyword: ${keyword} [${parameters.join(" ")}](${Object.keys(

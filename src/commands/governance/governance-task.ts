@@ -108,6 +108,7 @@ export class GovernanceTask extends Task {
         );
         this.emit(
           "progress",
+          { time: Date.now() },
           Math.round((progress += 100 / this.parameters.networkApis.length))
         );
         return { name, messages };
@@ -115,6 +116,7 @@ export class GovernanceTask extends Task {
     );
     this.emit(
       "result",
+      { time: Date.now() },
       networkReferendums
         .filter(({ messages }) => messages.length > 0)
         .map(

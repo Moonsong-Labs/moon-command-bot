@@ -56,6 +56,7 @@ export class BlockTimeTask extends Task {
           const { blockCount, date } = await getBlockDate(api, blockNumber);
           this.emit(
             "log",
+            { time: Date.now() },
             "info",
             `${name.padStart(this.namePadding, " ").toString()}: #${blockNumber
               .toString()
@@ -67,6 +68,7 @@ export class BlockTimeTask extends Task {
           );
           this.emit(
             "progress",
+            { time: Date.now() },
             Math.round((progress += 100 / this.parameters.networkApis.length))
           );
         })
@@ -96,6 +98,7 @@ export class BlockTimeTask extends Task {
           );
           this.emit(
             "log",
+            { time: Date.now() },
             "info",
             `${name.padStart(this.namePadding, " ")}: #${block
               .toString()
@@ -107,6 +110,7 @@ export class BlockTimeTask extends Task {
           );
           this.emit(
             "progress",
+            { time: Date.now() },
             Math.round((progress += 100 / this.parameters.networkApis.length))
           );
         })

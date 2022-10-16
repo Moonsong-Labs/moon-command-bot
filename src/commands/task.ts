@@ -2,35 +2,60 @@ import EventEmitter from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 export type TaskLogLevel = "debug" | "info" | "warn" | "error";
+export interface EventContext {
+  time: number; // as reported by Date.now()
+}
 
 export type TaskEvents = {
   // When the task is progressing
-  progress: (percentage: number, message?: string) => void;
+  progress: (
+    context: EventContext,
+    percentage: number,
+    message?: string
+  ) => void;
   // When the task emits logs
-  log: (level: TaskLogLevel, message: string) => void;
+  log: (context: EventContext, level: TaskLogLevel, message: string) => void;
   // when the task emits the result
-  result: (message: string) => void;
+  result: (context: EventContext, message: string) => void;
   // When the task emits attachments
-  attachment: (filePath?: string) => void;
+  attachment: (context: EventContext, filePath?: string) => void;
 
   // The following events are controlled by the Commander;
   // When the task is created
-  create: (cmdLine: string, link?: string) => void;
+  create: (
+    context: EventContext,
+    name: string,
+    id: number,
+    cmdLine: string,
+    link?: string
+  ) => void;
   // When the task started
-  start: () => void;
+  start: (context: EventContext) => void;
   // When the task is inserted or move in the queue
-  queue: (position: number) => void;
+  queue: (context: EventContext, position: number) => void;
   // When the task fails
-  failure: (message?: string) => void;
+  failure: (context: EventContext, message?: string) => void;
   // When the task suceeded
-  success: (message?: string) => void;
+  success: (context: EventContext, message?: string) => void;
   // When the task finished (it is sent after success or error)
-  end: (timings: { created: number; started: number; ended: number }) => void;
+  end: (context: EventContext) => void;
 };
+
+export const EVENT_NAMES: (keyof TaskEvents)[] = [
+  "progress",
+  "log",
+  "result",
+  "attachment",
+  "create",
+  "start",
+  "queue",
+  "failure",
+  "success",
+  "end",
+];
 
 export class TaskEventEmitter extends (EventEmitter as new () => TypedEmitter<TaskEvents>) {}
 export type TaskEventEmitterType = typeof TaskEventEmitter;
-
 
 export abstract class Task extends TaskEventEmitter {
   public readonly id: number;

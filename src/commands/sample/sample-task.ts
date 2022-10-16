@@ -19,11 +19,16 @@ export class SampleTask extends Task {
       if (this.cancelled) {
         return;
       }
-      this.emit("log", "debug", `Moving to timer ${i}`);
-      this.emit("progress", (100 * i) / this.time, `Timer ${i}`);
+      this.emit("log", { time: Date.now() }, "debug", `Moving to timer ${i}`);
+      this.emit(
+        "progress",
+        { time: Date.now() },
+        (100 * i) / this.time,
+        `Timer ${i}`
+      );
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-    this.emit("progress", 100, `Success`);
+    this.emit("progress", { time: Date.now() }, 100, `Success`);
   }
 
   async cancel() {

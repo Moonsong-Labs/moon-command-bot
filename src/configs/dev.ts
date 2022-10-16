@@ -1,6 +1,7 @@
 import { BotConfig } from "./config-types";
 
 const prodConfig: BotConfig = {
+  commander: { concurrentTasks: 1 },
   commands: {
     sample: { seconds: 10 },
     benchmark: null,
@@ -19,13 +20,18 @@ const prodConfig: BotConfig = {
       ],
     },
   },
-  history: {
-    serverUrl: "http://localhost:8000",
-    limit: 1000,
-    urlPrefix: "/history/test/tasks",
+  history: { limit: 1000 },
+  hooks: {
+    http: { urlPrefix: "/api" },
+    json: {
+      urlPrefix: "/json",
+      auth: { type: "secret", secret: "<change-me-for-production-usage>" },
+    },
   },
-  hooks: { http: { urlPrefix: "/api" } },
-  server: { listener: { port: 8000, hostname: "0.0.0.0" } },
+  server: {
+    serverUrl: "http://localhost:8000",
+    listener: { port: 8000, hostname: "0.0.0.0" },
+  },
 };
 
 export default prodConfig;

@@ -9,6 +9,18 @@ export const NETWORK_NAMES: NetworkName[] = [
   "alphanet",
 ];
 
+export const NETWORK_RUNTIMES: { [name in NetworkName]: string } = {
+  moonbeam: "moonbeam",
+  moonriver: "moonriver",
+  alphanet: "moonbase",
+};
+
+export const NETWORK_FORK_NAMES: { [name in NetworkName]: string } = {
+  moonbeam: "moonbeam",
+  moonriver: "moonriver",
+  alphanet: "moonbase-alpha",
+};
+
 export interface ForkTestConfig {
   // directory where cargo should run
   repoDirectory: string;
@@ -35,8 +47,8 @@ export async function executeForkTest(config: ForkTestConfig) {
       cwd: config.repoDirectory,
       env: {
         ...process.env,
-        RUNTIME_NAME: "moonbeam",
-        NETWORK: "moonbeam",
+        RUNTIME_NAME: NETWORK_RUNTIMES[config.network],
+        NETWORK: NETWORK_FORK_NAMES[config.network],
         ROOT_FOLDER: config.dataFolder,
         GIT_TAG: config.branch,
         USE_LOCAL_CLIENT: "true",

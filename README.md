@@ -67,6 +67,7 @@ Ex: http://localhost:8000/api/sample
 ## Help
 
 Users can query the help for all the commands by providing the keyword "help"
+
 ## Commands
 
 There are multiple commands in the [commands](src/commands) folder.
@@ -88,19 +89,55 @@ There are currently 3 pre-defined configuration:
 [Local](src/configs/local.ts): Enable all commands but only the API HTTP hook. It requires environment variables
 [Dev](src/configs/dev.ts): Only enable commands without external effect. Doesn't require environment variables
 
-You can specify the predefined configuration using the `BOT_ENV` environment variable. Ex:
+You can specify the predefined configuration using the `BOT_ENV` environment variable or the `--env` option. Ex:
 
 ```bash
 BOT_ENV=production npm run start
+npm run start -- --env "local"
 ```
+
+(`--` is required if you use `npm`, you need to remove it if you execute the script directly)
 
 ## Custom configuration
 
-It is possible to make your own configuration:
+### Custom typescript config
 
-- Copy the [env-sample.json](./env-sample.json) to your own json file (ex: `my-env.json`)
-- Modify your json file to add/remove hooks/services/
-- Start the service with `BOT_ENV=my-env.json npm run start`
+The benefit of using a typescript config file is to import environment variables.  
+You can copy one of the config sample or modify it and start the script with your ts file:
+
+```
+npm run start -- export-env --env local --out my-config.ts
+```
+
+It is possible to make your own configuration, by copying the config-sample-xxx.ts or by running the `export-env` subcommand and modifying your json file:
+
+```
+npm run start -- export-env --env local --out my-env.json
+```
+
+This will create a file `my-env.json` which you can tweak and then load with `npm run start -- --env my-env.json`
+
+## Proxy support
+
+It is possible to define a proxy for your main bot.
+Proxying allows you to pass a command to another bot (dedicated to some specific tasks for exemple).
+
+In the env configuration, you can pass:
+
+```
+proxies: [
+  {
+    url: "https://my-proxy.com/json",
+    auth: {
+      type: "secret",
+      secret: "whatever-you-want-as-a-secret",
+    },
+    commands: ["benchmark", "fork-test"]
+  }
+]
+```
+
+(The proxy server needs to have the json hook enabled with matching auth)
 
 # Linting and formatting
 

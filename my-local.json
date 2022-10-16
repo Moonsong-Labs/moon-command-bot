@@ -1,0 +1,102 @@
+{
+  "commander": {
+    "concurrentTasks": 5
+  },
+  "proxies": [
+    {
+      "url": "http://localhost:8001/json",
+      "auth": {
+        "type": "secret",
+        "secret": "<change-me-for-production-usage>"
+      },
+      "commands": [
+        "sample"
+      ]
+    }
+  ],
+  "commands": {
+    "sample": {
+      "seconds": 10
+    },
+    "governance": {
+      "networks": [
+        {
+          "network": "alphanet"
+        },
+        {
+          "network": "moonriver"
+        },
+        {
+          "network": "moonbeam"
+        }
+      ]
+    },
+    "benchmark": {
+      "gitFolder": "/home/crystalin/projects/moon-command-bot/repos",
+      "repos": {
+        "main": {
+          "name": "official",
+          "owner": "crystalin",
+          "repo": "moonbeam",
+          "installationId": "30016970",
+          "auth": {
+            "appId": "243455",
+            "clientId": "Iv1.5f82f2c9a8150905",
+            "clientSecret": "cbcc1b1ac50c725711cf13cf74ae6dd2f89adb2c",
+            "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAyhZLtX8JldqJj1EFWTOB1RbsSQi9SyUbBUSZWoh+kg0ZUWQB\nGGlH6QsE3QDMVzk0qXtrddGMJjOYwgTTlMlpCe8xI8E9Rjend3sPBa22CczsvyqO\nmeSw9uIrpszx1aO6aQ/EPN1fjpvKuZQcSYeRT7vkXxPAJlB0Iq6OHVOJwF0mKkF/\ntvDOs9lik2UfWbZyLzvhUT65UjWnGjR6xdjgsCAC8Hd9kM53lTTeKkShteu1ibtR\np7eXod0SpgnttQGSrF3R6ru2ezQWA5XXuDdg6f07GlEInjc7YfvUxCtegEAj0H4A\nWJWecDdM1InVtmBsOnUr0PJUuxCpSWZudW+++wIDAQABAoIBAEF9FC/O6VZMqcNt\n6CPOE0bw1MWeNWnCroz4fBHgpdPCtu+vTsOQaqNU1NChz5Z8jVpXCq31qEtA8UH+\numo/EvELOItztd2pb3XCxU17y8BFTnts2SV5/PckuCynwb8P/frKBzgKLUtTpVCa\ndMhHTIngQ9Oj3OMNs3UByEAssDlL4pKRES2eE2Esb4dyPv3l9wu234U4gboLTbBv\ngNwIfVztaz+kusCYuFTNF5FX+cp4r7ZNJhX3L0hAjPK9Uaq7gDY9IME2E5qCBN+T\n+ShYicMm898Z3AiH28jA+p3Pghn56Pz42dhtIqED+IOSdix5Jtd5BcQx3btO1nIi\nV9pmEBECgYEA9eBSBDfjCMiC4Bj3PJyDBVGUoMiTZ07S/iQF4y/u4NkYQyO7C0X6\n722JMbY1QMIKeNW4L+ydMZAEiHcpnaGImc37diARfveWs8qEn6Uah9XMd9kCr5Y1\nzPc3KNIef3tVBuFb4DXoXBusN6nEudmZ8i69LKfuhpDz/bc0WnBHgI8CgYEA0mhp\neHl+cM3O5S09LswWgjqpdIJN8JApgPhWWrHvYfcoDSw6I69i0SiwqNT6iTUJiwRs\n3RUtq3uPbkA02ozdcRjaebSMUD3Z/3uFpohN1WTlAP6OEy+8hxJnepA4N8pDn/9J\nlHzyzBR7WJPqhvALpmurTRX5ZETptZy+y5FFuNUCgYEArDYXe9jg7W/zKp6R3CQL\nKJiBLzQM+hidc18ruHoEJ/wmIDBQe47iOPxRUT47gkXmK8gVH4vsdaBXbHV58mwH\nTyKUc6H2XyVuqjK4PVDYijdW5MJcPTtKJ2sneTHiJovte8owHZPkUU8Yikwf+8PL\nLXNLEJH2YM359sRwqL9ndUUCgYEArSFpF86wsdVHVuBgpa8dHk9yvAG0bCvTWuH8\n/GfJV8ztUdmAhXh9USmwI1wMQvY3QgKEKW6Rw7bKEKgYVXTviW4v51Ee26/pPwW+\ntYcWtG5u2OCcu0DeWi5Uo08kUxPFjVOckeg2SKLZ08rygdHnZCrYK3fXXCAwRlYR\n0KNawXkCgYEA8dgSDuGZ5+A8W2qq8BL68bpzEypHMpxcNuPtAFtIgpz5LpNKNE80\nZ7KMfZaRAu0nSI997YZLgs2U0CNlZ7utszMjbyV+vedELMdl0VXDTizHG4OsZn/0\nzw4PTD/64Xd8a3kIWMk7rUp3IXFcVfjgwiNA3io/x5mZ2xz4yjrCX1o=\n-----END RSA PRIVATE KEY-----"
+          }
+        },
+        "fork": {
+          "name": "fork",
+          "owner": "crystalin",
+          "repo": "moonbeam",
+          "installationId": "30082980",
+          "auth": {
+            "appId": "244744",
+            "clientId": "Iv1.5d06e2d3f477a933",
+            "clientSecret": "331c5d057edbf7184badb75ccb2b4f4377aaadb0",
+            "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA3hK8XhoNv4EW7miuHaQRrfYDKdec8gJ6k+v/QUN4tvP67111\n6mF8FpZYyxg5a9SYPgrRjh5WLXM9LejzquU2WDF9Kn8sABOqrQcQka0rGyUUSxKT\n8PrlXaMsLU4QPhFiikrhXYt5m50o30YVXnmTF3ktwTLzcXFyUeBeRyStCOIuujrf\nt4TA1gppmRjEz1W8IMVKCRQTjszLku/kAKu4gRSrDN0J7PBx0KTPsu+3XPHsxRIS\nkrxmL3eMgj1AOCdHCChz5ECVQBKKZbaLWmr8uGBUwBQE6iOQ8fnj/5XzSpcHq+Gg\nPZD46xN+0pVDtq8pr2tmYVUfz1txQuWUv9xHAwIDAQABAoIBAQCRKSAWRuOLtb8e\nkjCWUYP4+aGxvS3rB/HGNXKB36/Nr4fs5WPJlHV/ckGSaEBImwv1Ki82vd/JD9YC\n5443vGKcnaTanYxOdIyRU9fh0ZcmxEMSm48261n4rkuXRbraR5TpHu9XrW8NaFqq\nL+6R9dhPdLeS3VJCaky29nnJ+VBeR/tZR2JUc3MaBdkZopuQC2FDIwgGXqOsEZ0H\nsZxLasaITC18Jv4n4vDIIlpCBr/rlqBQS/E27DlOlxYqz0iLXRF04QDOGh/YJvdm\n1jA3Na8RUVm14Cnaez7IDVKPg2Jtsnh3T9d42AbwUG+ivCXEFXcD5Z6wLXcKvtBa\nHXTN9B2BAoGBAO+yhIY+idwzY3FXmHB3YDx187cx9h/sq8JhUnsTYEhFTpf18iB7\nK6NEz0mGNIG4pTTpBx3b3fqE0xmCc/SfMk7hHY5w9hE4QmfOfTfhILRNvK46g/15\ncwlg1nILLT18j76VxJmpmuEoBbqG9pGFL6AmrW/Xz+tsC2kUTG4/redBAoGBAO0t\nWxm0g06K8j846mx7cCIvCfFk3EnlioJh6fkCw/pUS1+bxSkYE5Ofr2JB7XkMKbNC\nMtqL/UjXIV03v2EVNBHOpRTYI+HR7gdwBMxEe2imfbKV7N8nLg0N0wAY+0xm6+i6\nFU/o4BXDkkmufepb7nFUaeEPp1TcCbIKVn14kYFDAoGAUsda/yWP5K0WlakDqyt+\n38J4ZXbqogHRG3MS0hBR+wN8bfxxHwiKfHsh/ylK7tW+sDQd0hEBayf941xrATsN\nW7Jgy7V1NWMxg7oLAoZMDhiepajttlcABGgeBwqXGBnxZodAezTYmROCTvWXJ5BQ\nb0WMNgjY9Fu+4Q4yiwyQ2UECgYBq8culQJcAoHhw94oE1ngOgeVa2p7WF1GoTtxA\ncvXJd57xAn0ZdYjGRPfBN3cL4OcgtFXX482WvaKGtO9vqC7tZJ9dUcSEO7O32NPh\nA3QeEQyWrTG8wZ7rNfORlLIjljkDnHylppz8U04wOST/uuo+YdDIMdXC1uDsTesH\n8oixnwKBgQCaIuQvGrEdaUq0TuyU0xu1dPsXZiVa67KQxilamVNGCq35S40yEOAg\n+rVhI4FV1Y1HN//7Mi6znicevGTazm2es23BNgu4/pqdJWUX/jIA9cVs66jrlEy1\nHd4ad8mZS4EO6oOtJ5aezp89a6GjKxBeGe9S6e0pptguicLLpY4CUw==\n-----END RSA PRIVATE KEY-----"
+          }
+        }
+      }
+    },
+    "fork-test": {
+      "dataFolder": "/tmp/fork-test",
+      "gitFolder": "/home/crystalin/projects/moon-command-bot/repos",
+      "repo": {
+        "name": "moonbeam",
+        "owner": "crystalin",
+        "repo": "moonbeam",
+        "installationId": "30016970",
+        "auth": {
+          "appId": "243455",
+          "clientId": "Iv1.5f82f2c9a8150905",
+          "clientSecret": "cbcc1b1ac50c725711cf13cf74ae6dd2f89adb2c",
+          "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAyhZLtX8JldqJj1EFWTOB1RbsSQi9SyUbBUSZWoh+kg0ZUWQB\nGGlH6QsE3QDMVzk0qXtrddGMJjOYwgTTlMlpCe8xI8E9Rjend3sPBa22CczsvyqO\nmeSw9uIrpszx1aO6aQ/EPN1fjpvKuZQcSYeRT7vkXxPAJlB0Iq6OHVOJwF0mKkF/\ntvDOs9lik2UfWbZyLzvhUT65UjWnGjR6xdjgsCAC8Hd9kM53lTTeKkShteu1ibtR\np7eXod0SpgnttQGSrF3R6ru2ezQWA5XXuDdg6f07GlEInjc7YfvUxCtegEAj0H4A\nWJWecDdM1InVtmBsOnUr0PJUuxCpSWZudW+++wIDAQABAoIBAEF9FC/O6VZMqcNt\n6CPOE0bw1MWeNWnCroz4fBHgpdPCtu+vTsOQaqNU1NChz5Z8jVpXCq31qEtA8UH+\numo/EvELOItztd2pb3XCxU17y8BFTnts2SV5/PckuCynwb8P/frKBzgKLUtTpVCa\ndMhHTIngQ9Oj3OMNs3UByEAssDlL4pKRES2eE2Esb4dyPv3l9wu234U4gboLTbBv\ngNwIfVztaz+kusCYuFTNF5FX+cp4r7ZNJhX3L0hAjPK9Uaq7gDY9IME2E5qCBN+T\n+ShYicMm898Z3AiH28jA+p3Pghn56Pz42dhtIqED+IOSdix5Jtd5BcQx3btO1nIi\nV9pmEBECgYEA9eBSBDfjCMiC4Bj3PJyDBVGUoMiTZ07S/iQF4y/u4NkYQyO7C0X6\n722JMbY1QMIKeNW4L+ydMZAEiHcpnaGImc37diARfveWs8qEn6Uah9XMd9kCr5Y1\nzPc3KNIef3tVBuFb4DXoXBusN6nEudmZ8i69LKfuhpDz/bc0WnBHgI8CgYEA0mhp\neHl+cM3O5S09LswWgjqpdIJN8JApgPhWWrHvYfcoDSw6I69i0SiwqNT6iTUJiwRs\n3RUtq3uPbkA02ozdcRjaebSMUD3Z/3uFpohN1WTlAP6OEy+8hxJnepA4N8pDn/9J\nlHzyzBR7WJPqhvALpmurTRX5ZETptZy+y5FFuNUCgYEArDYXe9jg7W/zKp6R3CQL\nKJiBLzQM+hidc18ruHoEJ/wmIDBQe47iOPxRUT47gkXmK8gVH4vsdaBXbHV58mwH\nTyKUc6H2XyVuqjK4PVDYijdW5MJcPTtKJ2sneTHiJovte8owHZPkUU8Yikwf+8PL\nLXNLEJH2YM359sRwqL9ndUUCgYEArSFpF86wsdVHVuBgpa8dHk9yvAG0bCvTWuH8\n/GfJV8ztUdmAhXh9USmwI1wMQvY3QgKEKW6Rw7bKEKgYVXTviW4v51Ee26/pPwW+\ntYcWtG5u2OCcu0DeWi5Uo08kUxPFjVOckeg2SKLZ08rygdHnZCrYK3fXXCAwRlYR\n0KNawXkCgYEA8dgSDuGZ5+A8W2qq8BL68bpzEypHMpxcNuPtAFtIgpz5LpNKNE80\nZ7KMfZaRAu0nSI997YZLgs2U0CNlZ7utszMjbyV+vedELMdl0VXDTizHG4OsZn/0\nzw4PTD/64Xd8a3kIWMk7rUp3IXFcVfjgwiNA3io/x5mZ2xz4yjrCX1o=\n-----END RSA PRIVATE KEY-----"
+        }
+      }
+    }
+  },
+  "history": {
+    "limit": 1000
+  },
+  "hooks": {
+    "http": {
+      "urlPrefix": "/api"
+    },
+    "json": {
+      "urlPrefix": "/json",
+      "auth": {
+        "type": "none"
+      },
+      "secretToken": "<change-me-for-production-usage>"
+    }
+  },
+  "server": {
+    "serverUrl": "http://localhost:8000",
+    "listener": {
+      "port": 8000,
+      "hostname": "0.0.0.0"
+    }
+  }
+}

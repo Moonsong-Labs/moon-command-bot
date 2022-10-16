@@ -2,7 +2,7 @@ import { InstantReport, Reporter } from "./reporter";
 import { WebClient, KnownBlock } from "@slack/web-api";
 import Debug from "debug";
 import PQueue from "p-queue";
-import { TaskLogLevel } from "../commands/task";
+import { EventContext, TaskLogLevel } from "../commands/task";
 import { ProgressBar } from "./utils";
 import slackifyMarkdown from "slackify-markdown";
 const debug = Debug("reporters:slack");
@@ -11,6 +11,7 @@ export class SlackReporter extends Reporter {
   private client: WebClient;
   private ackFallback: (body?: string) => void;
   private channelId: string;
+  private taskId: number;
   private messageTsPromise: Promise<string>;
   private attachments: string[];
   private logs: string[];
@@ -85,7 +86,10 @@ export class SlackReporter extends Reporter {
     }
   }
 
-  public instantReport = async (report: InstantReport) => {
+  public instantReport = async (
+    context: EventContext,
+    report: InstantReport
+  ) => {
     this.status = "failure";
     const message = `${report.error ? `Error: ${report.error}\n` : "\n"}${
       report.mrkdwnMessage || ""
@@ -137,12 +141,19 @@ export class SlackReporter extends Reporter {
     }
   };
 
-  protected onCreate = async (cmdLine: string, link?: string) => {
+  protected onCreate = async (
+    context: EventContext,
+    name: string,
+    id: number,
+    cmdLine: string,
+    link?: string
+  ) => {
     // At this point, we know the task is being handled, and we can report acknowledgement
     this.ackFallback();
-    this.messageText = `${this.task.name}\n${cmdLine}`;
+    this.messageText = `${name}\n${cmdLine}`;
     this.cmdLine = cmdLine;
-    this.title = this.task.name;
+    this.title = name;
+    this.taskId = id;
     this.link = link;
     this.status = "progress";
     await this.postMessage();
@@ -163,7 +174,7 @@ export class SlackReporter extends Reporter {
         type: "header",
         text: {
           type: "plain_text",
-          text: `${emoji} #${this.task.id} - ${this.title}`,
+          text: `${emoji} #${this.taskId} - ${this.title}`,
         },
       },
     ];
@@ -217,14 +228,18 @@ export class SlackReporter extends Reporter {
   }
 
   protected onStart = async () => {};
-  protected onProgress = async (percent: number, message?: string) => {
+  protected onProgress = async (
+    context: EventContext,
+    percent: number,
+    message?: string
+  ) => {
     this.status = "progress";
     this.messageBlocks.progress = {
       type: "context",
       elements: [
         {
           text: `*${new Date().toISOString()}* | ${
-            this.link ? `<${this.link}|report>` : this.task.id.toString()
+            this.link ? `<${this.link}|report>` : this.taskId.toString()
           } | *Process* ${this.progressBar.render(percent)} ${
             message ? ` -  ${message}` : ""
           }`,
@@ -235,15 +250,19 @@ export class SlackReporter extends Reporter {
     this.updateMessage();
   };
 
-  protected onLog = async (level: TaskLogLevel, message: string) => {
+  protected onLog = async (
+    context: EventContext,
+    level: TaskLogLevel,
+    message: string
+  ) => {
     this.logs.push(`${level.toUpperCase()}: ${message}`);
   };
 
-  protected onAttachment = async (filePath: string) => {
+  protected onAttachment = async (context: EventContext, filePath: string) => {
     this.attachments.push(filePath);
   };
 
-  protected onSuccess = async (message?: string) => {
+  protected onSuccess = async (context: EventContext, message?: string) => {
     this.status = "success";
     this.messageBlocks.progress = {
       type: "context",
@@ -258,7 +277,7 @@ export class SlackReporter extends Reporter {
     };
   };
 
-  protected onFailure = async (message?: string) => {
+  protected onFailure = async (context: EventContext, message?: string) => {
     this.status = "failure";
     this.messageBlocks.progress = {
       type: "context",
@@ -280,7 +299,7 @@ export class SlackReporter extends Reporter {
     this.updateMessage();
   };
 
-  protected onResult = async (mrkdwnMessage: string) => {
+  protected onResult = async (context: EventContext, mrkdwnMessage: string) => {
     this.messageBlocks.result = {
       type: "context",
       elements: [

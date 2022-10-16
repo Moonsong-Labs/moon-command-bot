@@ -66,7 +66,12 @@ export class ForkTestTask extends Task {
     debug(`Running fork-test from ${branch}`);
 
     // try {
-    this.emit("progress", 5, `Preparing branch ${branch}`);
+    this.emit(
+      "progress",
+      { time: Date.now() },
+      5,
+      `Preparing branch ${branch}`
+    );
     const repoDirectory = await repo.clone(gitFolder);
     await repo.checkoutBranch(repoDirectory, branch);
 
@@ -82,11 +87,16 @@ export class ForkTestTask extends Task {
       network,
       dataFolder: this.parameters.dataFolder,
     };
-    this.emit("progress", 10, `Running fork-test (~20min)`);
+    this.emit(
+      "progress",
+      { time: Date.now() },
+      10,
+      `Running fork-test (~20min)`
+    );
     const result = await executeForkTest(config);
-    const finalData = result.split('\n').slice(-15).join("  \n")
-    this.emit("log", "debug", result);
-    this.emit("result", finalData);
+    const finalData = result.split("\n").slice(-15).join("  \n");
+    this.emit("log", { time: Date.now() }, "debug", result);
+    this.emit("result", { time: Date.now() }, finalData);
   }
 
   cancel() {

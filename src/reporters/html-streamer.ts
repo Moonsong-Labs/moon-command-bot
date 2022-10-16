@@ -3,7 +3,7 @@ import { Writable } from "node:stream";
 import Debug from "debug";
 import MarkdownIt from "markdown-it";
 import MarkdownItEmoji from "markdown-it-emoji";
-import { TaskLogLevel } from "../commands/task";
+import { EventContext, TaskLogLevel } from "../commands/task";
 import slackifyMarkdown from "slackify-markdown";
 
 const debug = Debug("reporters:stream");
@@ -84,7 +84,10 @@ export class HTMLStreamer extends Reporter {
     </div>\n`);
   }
 
-  public instantReport = async (report: InstantReport) => {
+  public instantReport = async (
+    context: EventContext,
+    report: InstantReport
+  ) => {
     debug(`Report: ${report.error} / ${report.mrkdwnMessage}`);
     this.updateElement("status", "created");
     this.updateElement("title", report.error ? "Invalid task" : "Report");
@@ -96,7 +99,7 @@ export class HTMLStreamer extends Reporter {
        }");`
     );
     if (report.error) {
-      this.addLog("error", report.error);
+      this.addLog(context.time, "error", report.error);
     }
     this.writeScript(
       `document.getElementById("progress").classList.remove("w3-grey", "w3-yellow");
@@ -151,11 +154,13 @@ export class HTMLStreamer extends Reporter {
     );
   }
 
-  private addLog(level: TaskLogLevel, message: string) {
+  private addLog(time: number, level: TaskLogLevel, message: string) {
     this.writeScript(
       `{const log = document.createElement("div"); 
        log.classList.add('log');
-       log.innerHTML = \`${new Date().toISOString()} ${level.toUpperCase()} ${message.replaceAll(
+       log.innerHTML = \`${new Date(
+         time
+       ).toISOString()} ${level.toUpperCase()} ${message.replaceAll(
         "`",
         '"'
       )}\`;
@@ -168,10 +173,16 @@ export class HTMLStreamer extends Reporter {
     this.stream.end(`</body></html>`);
   };
 
-  protected onCreate = async (cmdLine: string, link?: string) => {
+  protected onCreate = async (
+    context: EventContext,
+    name: string,
+    id: number,
+    cmdLine: string,
+    link?: string
+  ) => {
     debug(`created`);
     this.updateElement("status", "created");
-    this.updateElement("title", this.task.name || "task");
+    this.updateElement("title", name || "task");
     this.updateElement("cmd-line", cmdLine);
     this.writeScript(
       `document.getElementById("cmd-line").innerText = \`${cmdLine.replace(
@@ -179,7 +190,7 @@ export class HTMLStreamer extends Reporter {
         '"'
       )}\``
     );
-    this.updateElement("task-id", `#${this.task.id}`);
+    this.updateElement("task-id", `#${id}`);
   };
   protected onStart = async () => {
     this.writeScript(
@@ -188,7 +199,7 @@ export class HTMLStreamer extends Reporter {
     );
     this.updateElement("status", "started");
   };
-  protected onSuccess = async (message?: string) => {
+  protected onSuccess = async (context: EventContext, message?: string) => {
     this.writeScript(
       `document.getElementById("task-id").classList.remove("w3-grey", "w3-yellow");
        document.getElementById("task-id").classList.add("w3-green");`
@@ -202,7 +213,7 @@ export class HTMLStreamer extends Reporter {
       `Success${message ? ` - ${message.replace("`", '"')}` : ""}`
     );
   };
-  protected onFailure = async (message?: string) => {
+  protected onFailure = async (context: EventContext, message?: string) => {
     this.writeScript(
       `document.getElementById("task-id").classList.remove("w3-grey", "w3-yellow");
        document.getElementById("task-id").classList.add("w3-red");`
@@ -216,19 +227,27 @@ export class HTMLStreamer extends Reporter {
       `Failure${message ? ` - ${message.replace("`", '"')}` : ""}`
     );
   };
-  protected onProgress = async (percent: number, message?: string) => {
+  protected onProgress = async (
+    context: EventContext,
+    percent: number,
+    message?: string
+  ) => {
     debug(`progress: ${percent}`);
     this.updateProgress(percent, message);
   };
 
-  protected onLog = async (level: TaskLogLevel, message: string) => {
-    this.addLog(level, message);
+  protected onLog = async (
+    context: EventContext,
+    level: TaskLogLevel,
+    message: string
+  ) => {
+    this.addLog(context.time, level, message);
   };
-  protected onAttachment = async (filePath: string) => {
-    this.addLog("info", `File attached: ${filePath}`);
+  protected onAttachment = async (context: EventContext, filePath: string) => {
+    this.addLog(context.time, "info", `File attached: ${filePath}`);
   };
 
-  protected onResult = async (mrkdwnMessage: string) => {
+  protected onResult = async (context: EventContext, mrkdwnMessage: string) => {
     this.updateElement(
       "result",
       this.markdown.render(

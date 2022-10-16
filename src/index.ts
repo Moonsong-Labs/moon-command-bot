@@ -7,20 +7,22 @@ import { HttpHook } from "./hooks/http-hook";
 import { SampleFactory } from "./commands/sample/sample-factory";
 import { BenchmarkFactory } from "./commands/benchmark/benchmark-factory";
 import { BlockTimeFactory } from "./commands/block-time/block-time-factory";
-import { TaskHistory } from "./services/task-history";
+import { HistoryService } from "./services/history";
 import { SlackHook } from "./hooks/slack-hook";
 import { TaskFactory } from "./commands/factory";
 import { GithubHook } from "./hooks/github-hook";
 import { BotConfig } from "./configs/config-types";
 import { GovernanceFactory } from "./commands/governance/governance-factory";
 import { ForkTestFactory } from "./commands/fork-test/fork-test-factory";
+import { JsonHook } from "./hooks/json-hook";
+import { ProxyService } from "./services/proxy";
 
 let isTerminating = false;
 
 let commander: Commander;
 let hooks: Hook[];
 let taskFactories: TaskFactory[];
-let historyService: TaskHistory;
+let historyService: HistoryService;
 let server: http.Server;
 
 export async function destroy() {
@@ -106,6 +108,14 @@ export async function start(env: BotConfig) {
     );
     hooks.push(new HttpHook(env.hooks.http, app));
   }
+  if (env.hooks.json) {
+    console.log(
+      `-       Register hook: [${chalk.yellow(
+        env.hooks.json.urlPrefix
+      )}] JSON Api`
+    );
+    hooks.push(new JsonHook(env.hooks.json, app));
+  }
   if (env.hooks.github) {
     for (const githubConfig of Object.values(env.hooks.github)) {
       console.log(
@@ -124,16 +134,32 @@ export async function start(env: BotConfig) {
     );
     hooks.push(new SlackHook(env.hooks.slack, app));
   }
-  if (env.history) {
-    console.log(
-      `- Start extra service: [${chalk.yellow(
-        env.history.urlPrefix
-      )}] TaskHistory (URL ${env.history.serverUrl})`
+
+  if (env.proxies) {
+    env.proxies.forEach((proxy) =>
+      console.log(
+        `-      Register proxy: ${chalk.yellow(
+          proxy.url
+        )} [${proxy.commands.map((command) => chalk.green(command))}]`
+      )
     );
-    historyService = new TaskHistory(env.history, app);
   }
 
-  const commander = new Commander(taskFactories, hooks, historyService);
+  if (env.history) {
+    console.log(`- Start extra service: TaskHistory`);
+    historyService = new HistoryService(env.history);
+  }
+
+  const commander = new Commander(
+    env.commander,
+    taskFactories,
+    hooks,
+    historyService,
+    historyService && // retrieve the url for history service through http
+      env.hooks.http &&
+      `${env.server.serverUrl}/${env.hooks.http.urlPrefix}/history`,
+    env.proxies && env.proxies.map((config) => new ProxyService(config))
+  );
 
   await Promise.all([commander.isReady]);
 

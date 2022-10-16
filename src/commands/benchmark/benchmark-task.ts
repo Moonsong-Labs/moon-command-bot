@@ -73,21 +73,36 @@ export class BenchmarkTask extends Task {
     debug(`Running benchmark from ${branch}`);
 
     // try {
-    this.emit("progress", 5, `Preparing branch ${branch}`);
+    this.emit(
+      "progress",
+      { time: Date.now() },
+      5,
+      `Preparing branch ${branch}`
+    );
     const repoDirectory = await repos.main.clone(gitFolder);
     await repos.main.checkoutBranch(repoDirectory, branch);
 
     const config: BenchRunConfig = { repoDirectory, branch, command };
-    this.emit("progress", 10, `Running benchmark (~10min)`);
+    this.emit(
+      "progress",
+      { time: Date.now() },
+      10,
+      `Running benchmark (~10min)`
+    );
     const { outputFile, logs, benchCommand } = await executeBenchmark(config);
     // const { outputFile, logs, benchCommand } = {
     //   outputFile: "./pallets/author-mapping/src/weights.rs",
     //   logs: "none",
     //   benchCommand: "cargo run benchmark stuff",
     // };
-    this.emit("log", "debug", `Executed: ${benchCommand}`);
-    this.emit("log", "info", logs);
-    this.emit("progress", 70, `Checking rustup`);
+    this.emit(
+      "log",
+      { time: Date.now() },
+      "debug",
+      `Executed: ${benchCommand}`
+    );
+    this.emit("log", { time: Date.now() }, "info", logs);
+    this.emit("progress", { time: Date.now() }, 70, `Checking rustup`);
 
     const toolchain = (
       await runTask("rustup show active-toolchain --verbose", {
@@ -130,7 +145,7 @@ export class BenchmarkTask extends Task {
   ${bodySuffix}
   `.trim();
 
-    this.emit("progress", 80, `Creating fork branch`);
+    this.emit("progress", { time: Date.now() }, 80, `Creating fork branch`);
 
     const forkBranch = `benchbot-${new Date().getTime()}-task-${this.id}`;
     await repos.fork.addAsRemote(repoDirectory);
@@ -142,7 +157,7 @@ export class BenchmarkTask extends Task {
       `Updates ${config.command.type} ${config.command.palletName} weights`
     );
 
-    this.emit("progress", 90, `Creating pull request`);
+    this.emit("progress", { time: Date.now() }, 90, `Creating pull request`);
     const { number, url } = await repos.main.createPullRequest(
       branch,
       forkBranch,
@@ -150,8 +165,13 @@ export class BenchmarkTask extends Task {
       body
     );
 
-    this.emit("attachment", outputFile);
-    this.emit("log", "info", `Pull request #${number} generated: ${url}`);
+    this.emit("attachment", { time: Date.now() }, outputFile);
+    this.emit(
+      "log",
+      { time: Date.now() },
+      "info",
+      `Pull request #${number} generated: ${url}`
+    );
   }
 
   cancel() {

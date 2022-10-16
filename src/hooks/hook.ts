@@ -1,11 +1,11 @@
 import EventEmitter from "node:events";
 import type TypedEmitter from "typed-emitter";
 import type { CommandData } from "../commands/commander";
-import { Reporter } from "../reporters/reporter";
+import { TaskReporterInterface } from "../reporters/reporter";
 import { Service } from "../services/service";
 
 export type HookEvents = {
-  command: (data: CommandData, reporter: Reporter) => void;
+  command: (data: CommandData, reporter: TaskReporterInterface) => void;
 };
 
 export abstract class Hook
