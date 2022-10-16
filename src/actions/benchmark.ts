@@ -1,14 +1,9 @@
-import * as path from "path";
-import * as fs from "fs/promises";
 import { runTask } from "./runner";
 import Debug from "debug";
 const debug = Debug("actions:benchmark");
 
 // const cargoRun = "cargo run --features=runtime-benchmarks --bin moonbeam -- ";
 const cargoRun = "cargo run ";
-
-const ORIGINAL_REMOTE_NAME = "original";
-const FORK_REMOTE_NAME = "fork";
 
 export interface PalletCommand {
   type: "pallet";
@@ -122,7 +117,6 @@ export function validateCommand(type: string, name: string): Command {
   }
   throw new Error(`Invalid benchmark ${type} ${name}`);
 }
-
 
 export async function executeBenchmark(config: BenchRunConfig) {
   debug(`Starting benchmark of ${config.command.type}...`);

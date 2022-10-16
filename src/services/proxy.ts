@@ -24,12 +24,14 @@ export interface ProxyServiceConfig {
 // Service used to proxy command to another bot
 // This is useful for heavy command requiring specific server configuration
 export class ProxyService implements Service {
-  public readonly limit: number;
+  private readonly limit: number;
+  private readonly historyServerUrl: string;
   public isReady: Promise<Service>;
-  public config: ProxyServiceConfig;
+  private config: ProxyServiceConfig;
 
-  constructor(config: ProxyServiceConfig) {
+  constructor(config: ProxyServiceConfig, historyServerUrl?: string) {
     this.config = config;
+    this.historyServerUrl = historyServerUrl;
 
     this.isReady = Promise.resolve(this);
   }
@@ -94,11 +96,20 @@ export class ProxyService implements Service {
               debug(`Warning: Instant report after task being created !!`);
             }
             reporter.instantReport(parameters[0], parameters[1]);
+          } else if (name == "create") {
+            isCreated = true;
+            reporter.attachTask(redirectedTask);
+            const [context, title, id, cmdLine, link] = parameters;
+            redirectedTask.emit(
+              name,
+              context,
+              title,
+              id,
+              cmdLine,
+              `${this.historyServerUrl}/${id}`
+            );
           } else {
-            if (name == "create") {
-              isCreated = true;
-              reporter.attachTask(redirectedTask);
-            } else if (name == "end") {
+            if (name == "end") {
               hasEnded = true;
             }
             redirectedTask.emit(name, ...parameters);

@@ -150,15 +150,18 @@ export async function start(env: BotConfig) {
     historyService = new HistoryService(env.history);
   }
 
+  const historyServerUrl =
+    historyService && // retrieve the url for history service through http
+    env.hooks.http &&
+    `${env.server.serverUrl}/${env.hooks.http.urlPrefix}/report`;
   const commander = new Commander(
     env.commander,
     taskFactories,
     hooks,
     historyService,
-    historyService && // retrieve the url for history service through http
-      env.hooks.http &&
-      `${env.server.serverUrl}/${env.hooks.http.urlPrefix}/history`,
-    env.proxies && env.proxies.map((config) => new ProxyService(config))
+    historyServerUrl,
+    env.proxies &&
+      env.proxies.map((config) => new ProxyService(config, historyServerUrl))
   );
 
   await Promise.all([commander.isReady]);
