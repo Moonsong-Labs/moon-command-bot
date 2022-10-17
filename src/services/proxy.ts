@@ -1,6 +1,6 @@
 import { Service } from "./service";
 import { request, Agent } from "undici";
-import ndjsonStream from "can-ndjson-stream";
+import ndjson from "ndjson";
 import jwt from "jsonwebtoken";
 import { TaskReporterInterface } from "../reporters/reporter";
 import { CommandData } from "../commands/commander";
@@ -68,7 +68,7 @@ export class ProxyService implements Service {
           bodyTimeout: 24 * 3600 * 1000,
         }),
       });
-      const stream = ndjsonStream(response.body);
+      const stream = response.body.pipe(ndjson.parse());
       let isCreated = false;
       let hasEnded = false;
 
@@ -121,10 +121,11 @@ export class ProxyService implements Service {
             redirectedTask.emit(name, ...parameters);
           }
         } catch (e) {
-          debug(`ERROR proxying command: ${e.message}\n${e.stack}`);
+          debug(`ERROR reading proxy: ${e.message}\n${e.stack}`);
         }
       }
     } catch (e) {
+      debug(`ERROR proxying command: ${e.message}\n${e.stack}`);
       reporter.instantReport({ time: Date.now() }, { error: e.message });
     }
   }
