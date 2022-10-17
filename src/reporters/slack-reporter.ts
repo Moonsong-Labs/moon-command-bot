@@ -7,8 +7,8 @@ import { ProgressBar } from "./utils";
 import slackifyMarkdown from "slackify-markdown";
 const debug = Debug("reporters:slack");
 
-// It is limited to 40_000 so we remove 5k as overhead
-const SLACK_MAX_LENGTH = 40_000 - 5_000;
+// bolt-app must be less than 3001 characters
+const SLACK_MAX_LENGTH = 2500;
 export class SlackReporter extends Reporter {
   private client: WebClient;
   private ackFallback: (body?: string) => void;
