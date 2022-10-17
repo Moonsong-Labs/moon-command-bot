@@ -63,9 +63,9 @@ export class ProxyService implements Service {
         headers,
         body: JSON.stringify(commandData),
         dispatcher: new Agent({
-          keepAliveTimeout: 3_600_000,
-          keepAliveMaxTimeout: 3_600_000,
-          bodyTimeout: 3_600_000,
+          keepAliveTimeout: 18_000_000,
+          keepAliveMaxTimeout: 18_000_000,
+          bodyTimeout: 18_000_000,
         }),
       });
       const stream = ndjsonStream(response.body);
