@@ -1,5 +1,5 @@
 import { Service } from "./service";
-import { fetch, Agent } from "undici";
+import { request, Agent } from "undici";
 import ndjsonStream from "can-ndjson-stream";
 import jwt from "jsonwebtoken";
 import { TaskReporterInterface } from "../reporters/reporter";
@@ -58,14 +58,14 @@ export class ProxyService implements Service {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const response = await fetch(this.config.url, {
+      const response = await request(this.config.url, {
         method: "POST", // or 'PUT'
         headers,
         body: JSON.stringify(commandData),
         dispatcher: new Agent({
-          keepAliveTimeout: 18_000_000,
-          keepAliveMaxTimeout: 18_000_000,
-          bodyTimeout: 18_000_000,
+          keepAliveTimeout: 24 * 3600 * 1000,
+          keepAliveMaxTimeout: 24 * 3600 * 1000,
+          bodyTimeout: 24 * 3600 * 1000,
         }),
       });
       const stream = ndjsonStream(response.body);
