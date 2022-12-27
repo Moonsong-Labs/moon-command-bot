@@ -1,6 +1,6 @@
 {
   "name": "moon-command-bot",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "description": "Bot to handle command for Moonbeam",
   "author": "Crystalin <alan@purestake.com>",
@@ -40,7 +40,7 @@
     "markdown-it-emoji": "^2.0.2",
     "moment": "^2.29.4",
     "moment-parseplus": "^2.0.0",
-    "moonbeam-tools": "^0.0.32",
+    "moonbeam-tools": "^0.0.35",
     "ndjson": "^2.0.0",
     "npm": "^8.19.2",
     "octokit": "^2.0.7",
@@ -53,8 +53,9 @@
     "yargs": "^17.6.0"
   },
   "devDependencies": {
-    "@moonbeam-network/api-augment": "^0.1801.0",
-    "@polkadot/api-augment": "^9.4.3",
+    "@moonbeam-network/api-augment": "^0.2000.1",
+    "@polkadot/api": "^9.10.3",
+    "@polkadot/util": "^10.1.8",
     "@polkadot/dev": "^0.67.135",
     "@polkadot/x-textencoder": "^10.1.9",
     "@rollup/plugin-alias": "^3.1.9",
@@ -80,10 +81,26 @@
   },
   "nodemonConfig": {
     "exec": "npm start",
+    "ext": "ts",
     "watch": [
       ".env",
       "."
     ]
+  },
+  "overrides": {
+    "@polkadot/api": "$@polkadot/api",
+    "@polkadot/api-derive": "$@polkadot/api",
+    "@polkadot/api-augment": "$@polkadot/api",
+    "@polkadot/api-base": "$@polkadot/api",
+    "@polkadot/rpc-augment": "$@polkadot/api",
+    "@polkadot/rpc-core": "$@polkadot/api",
+    "@polkadot/rpc-provider": "$@polkadot/api",
+    "@polkadot/types-create": "$@polkadot/api",
+    "@polkadot/types-augment": "$@polkadot/api",
+    "@polkadot/types-support": "$@polkadot/api",
+    "@polkadot/types-codec": "$@polkadot/api",
+    "@polkadot/types": "$@polkadot/api",
+    "@polkadot/types-known": "$@polkadot/api"
   },
   "bin": {
     "moon-command-bot": "./dist/moon-command-bot.cjs"
