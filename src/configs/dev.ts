@@ -15,6 +15,7 @@ const prodConfig: BotConfig = {
     governance: {
       networks: [
         { network: "alphanet" },
+        { network: "kusama" },
         { network: "moonriver" },
         { network: "moonbeam" },
       ],

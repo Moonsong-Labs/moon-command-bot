@@ -107,7 +107,9 @@ export class GovernanceTask extends Task {
         this.emit(
           "progress",
           { time: Date.now() },
-          Math.round((progress += 100 / this.parameters.networkApis.length))
+          Math.floor(
+            (progress += 100 / (this.parameters.networkApis.length * 2))
+          )
         );
         return { version: "1", name, messages };
       })
@@ -360,7 +362,9 @@ export class GovernanceTask extends Task {
         this.emit(
           "progress",
           { time: Date.now() },
-          Math.round((progress += 100 / this.parameters.networkApis.length))
+          Math.round(
+            (progress += 100 / (this.parameters.networkApis.length * 2))
+          )
         );
         return { version: "1", name, messages };
       })
