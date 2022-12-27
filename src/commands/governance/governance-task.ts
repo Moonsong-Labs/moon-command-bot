@@ -42,8 +42,6 @@ export class GovernanceTask extends Task {
     const networkDemocracy = await Promise.all(
       this.parameters.networkApis.map(async ({ api, name }) => {
         const header = await api.rpc.chain.getHeader();
-        const blockNumber = header.number.toNumber();
-        const blockHash = header.hash.toString();
 
         const referendumV1 = await api.derive.democracy.referendums();
         const messages = await Promise.all(
@@ -371,7 +369,7 @@ export class GovernanceTask extends Task {
     this.emit(
       "result",
       { time: Date.now() },
-      networkReferendums
+      [...networkDemocracy, ...networkReferendums]
         .filter(({ messages }) => messages.length > 0)
         .map(
           ({ name, messages }) =>
