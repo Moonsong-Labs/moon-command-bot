@@ -1,6 +1,6 @@
 {
   "name": "moon-command-bot",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": true,
   "description": "Bot to handle command for Moonbeam",
   "author": "Crystalin <alan@purestake.com>",
@@ -40,7 +40,7 @@
     "markdown-it-emoji": "^2.0.2",
     "moment": "^2.29.4",
     "moment-parseplus": "^2.0.0",
-    "moonbeam-tools": "^0.0.44",
+    "moonbeam-tools": "^0.0.45",
     "ndjson": "^2.0.0",
     "npm": "^8.19.2",
     "octokit": "^2.0.7",

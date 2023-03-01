@@ -1,6 +1,6 @@
 {
   "name": "@moonbeam-network/moon-bot",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "description": "Bot to handle command for Moonbeam Development",
   "author": "Crystalin <alan@purestake.com>",
   "license": "ISC",
