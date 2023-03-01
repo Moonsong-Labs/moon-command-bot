@@ -40,7 +40,7 @@
     "markdown-it-emoji": "^2.0.2",
     "moment": "^2.29.4",
     "moment-parseplus": "^2.0.0",
-    "moonbeam-tools": "^0.0.41",
+    "moonbeam-tools": "^0.0.44",
     "ndjson": "^2.0.0",
     "npm": "^8.19.2",
     "octokit": "^2.0.7",
@@ -53,7 +53,7 @@
     "yargs": "^17.6.0"
   },
   "devDependencies": {
-    "@moonbeam-network/api-augment": "^0.2000.1",
+    "@moonbeam-network/api-augment": "^0.2100.0",
     "@polkadot/api": "^9.10.3",
     "@polkadot/dev": "^0.67.135",
     "@polkadot/util": "^10.1.8",

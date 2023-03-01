@@ -1,3 +1,5 @@
+import "@polkadot/api-augment";
+import "@moonbeam-network/api-augment";
 import { BN, BN_TEN } from "@polkadot/util";
 import { ApiPromise } from "@polkadot/api";
 
@@ -145,10 +147,6 @@ export class GovernanceTask extends Task {
             .humanize()}->${symbol}`;
         };
 
-        const header = await api.rpc.chain.getHeader();
-        const blockNumber = header.number.toNumber();
-        const blockHash = header.hash.toString();
-
         const referendum = await getReferendumByGroups(api);
         const messages = await Promise.all(
           referendum.map(async (ref) => {
@@ -200,7 +198,8 @@ export class GovernanceTask extends Task {
               : "?";
 
             const callData =
-              ref.image && (await callInterpreter(api, ref.image.proposal));
+              ref?.image?.proposal &&
+              (await callInterpreter(api, ref.image.proposal));
             const imageText =
               callData && callData.text
                 ? callData.text.startsWith("whitelist.dispatch")
@@ -257,9 +256,7 @@ export class GovernanceTask extends Task {
                 ? ref.info.asOngoing.deciding.unwrap().confirming.isSome
                   ? `${await toBlockMoment(
                       api,
-                      ref.track.confirmPeriod.add(
-                        ref.info.asOngoing.deciding.unwrap().confirming.unwrap()
-                      ),
+                      ref.info.asOngoing.deciding.unwrap().confirming.unwrap(),
                       "✅"
                     )}`
                   : ref.decidingEnd
@@ -328,9 +325,7 @@ export class GovernanceTask extends Task {
                   : ref.info.isOngoing
                   ? ref.info.asOngoing.deciding.isSome &&
                     ref.info.asOngoing.deciding.unwrap().confirming.isSome
-                    ? ref.track.confirmPeriod.add(
-                        ref.info.asOngoing.deciding.unwrap().confirming.unwrap()
-                      )
+                    ? ref.info.asOngoing.deciding.unwrap().confirming.unwrap()
                     : ref.decidingEnd
                   : ref.decidingEnd
                 )?.toBigInt?.() || 0n,
