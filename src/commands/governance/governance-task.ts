@@ -202,7 +202,8 @@ export class GovernanceTask extends Task {
               (await callInterpreter(api, ref.image.proposal));
             const imageText =
               callData && callData.text
-                ? callData.text.startsWith("whitelist.dispatch")
+                ? callData.text.startsWith("whitelist.dispatch") &&
+                  callData.subCalls.length > 0
                   ? `${
                       ref.info.isOngoing
                         ? (
